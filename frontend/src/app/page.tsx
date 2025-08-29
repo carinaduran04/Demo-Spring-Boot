@@ -1,103 +1,151 @@
-import Image from "next/image";
+"use client";
+import Link from "next/link";
 
-export default function Home() {
+
+export default function SolicitudPrestamo() {
+
+  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => e.preventDefault();
+
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    <div className="max-w-6xl mx-auto p-4">
+      <form
+        onSubmit={onSubmit}
+        className="grid grid-cols-12 gap-2 bg-gray-100 border-2 border-green-500 p-4 rounded-xl shadow"
+      >
+        <div className="col-span-3">
+          <label className="block text-[11px] font-bold">Nombre</label>
+          <input className="w-full border border-gray-300 rounded p-1.5 text-xs" placeholder="Maribel" />
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+        <div className="col-span-3">
+          <label className="block text-[11px] font-bold">Apellidos</label>
+          <input className="w-full border border-gray-300 rounded p-1.5 text-xs" placeholder="Duran" />
+        </div>
+        <div className="col-span-2">
+          <label className="block text-[11px] font-bold">Apodo</label>
+          <input className="w-full border border-gray-300 rounded p-1.5 text-xs" placeholder="Mari" />
+        </div>
+        <div className="col-span-2">
+          <label className="block text-[11px] font-bold">Cédula</label>
+          <input className="w-full border border-gray-300 rounded p-1.5 text-xs" placeholder="043-042-99240-1" />
+        </div>
+        <div className="col-span-2">
+          <span className="block text-[11px] font-bold">Estado Civil:</span>
+          <div className="flex items-center gap-3">
+            <label className="flex items-center gap-1 text-xs">
+              <input type="checkbox" className="accent-gray-700" /> Casado/a
+            </label>
+            <label className="flex items-center gap-1 text-xs">
+              <input type="checkbox" className="accent-gray-700" /> Soltero/a
+            </label>
+          </div>
+        </div>
+
+        <div className="col-span-2">
+          <label className="block text-[11px] font-bold">Teléfono</label>
+          <input className="w-full border border-gray-300 rounded p-1.5 text-xs" placeholder="829-949-4251" />
+        </div>
+        <div className="col-span-2">
+          <label className="block text-[11px] font-bold">Celular</label>
+          <input className="w-full border border-gray-300 rounded p-1.5 text-xs" placeholder="809-241-4249" />
+        </div>
+        <div className="col-span-3">
+          <label className="block text-[11px] font-bold">E-Mail</label>
+          <input className="w-full border border-gray-300 rounded p-1.5 text-xs" placeholder="mari058@ejemplo.com" />
+        </div>
+        <div className="col-span-2">
+          <label className="block text-[11px] font-bold">Ciudad</label>
+          <input className="w-full border border-gray-300 rounded p-1.5 text-xs" placeholder="San Francisco" />
+        </div>
+        <div className="col-span-3">
+          <label className="block text-[11px] font-bold">Tipo de Préstamo</label>
+          <select className="w-full border border-gray-300 rounded p-1.5 text-xs">
+            <option value="">Seleccione una opción</option>
+            <option>Personal</option>
+            <option>Negocio</option>
+            <option>Vehiculo </option>
+          </select>
+        </div>
+
+        <div className="col-span-2">
+          <label className="block text-[11px] font-bold">Monto Solicitado (DOP)</label>
+          <input className="w-full border border-gray-300 rounded p-1.5 text-xs" placeholder="54,000" />
+        </div>
+        <div className="col-span-3">
+          <span className="block text-[11px] font-bold">Vivienda</span>
+          <div className="flex items-center gap-4">
+            <label className="flex items-center gap-1 text-xs">
+              <input type="radio" name="vivienda" className="accent-gray-700" /> Propia
+            </label>
+            <label className="flex items-center gap-1 text-xs">
+              <input type="radio" name="vivienda" className="accent-gray-700" /> Alquilada
+            </label>
+          </div>
+        </div>
+        <div className="col-span-2">
+          <label className="block text-[11px] font-bold">Inició a vivir en</label>
+          <input className="w-full border border-gray-300 rounded p-1.5 text-xs" placeholder="dd/mm/aaaa" />
+        </div>
+        <div className="col-span-3">
+          <label className="block text-[11px] font-bold">Profesión</label>
+          <input className="w-full border border-gray-300 rounded p-1.5 text-xs" placeholder="Contador" />
+        </div>
+        <div className="col-span-2">
+          <span className="block text-[11px] font-bold">Negocio propio</span>
+          <div className="flex items-center gap-4">
+            <label className="flex items-center gap-1 text-xs">
+              <input type="radio" name="negocio" className="accent-gray-700" /> Sí
+            </label>
+            <label className="flex items-center gap-1 text-xs">
+              <input type="radio" name="negocio" className="accent-gray-700" /> No
+            </label>
+          </div>
+        </div>
+
+        <div className="col-span-3">
+          <label className="block text-[11px] font-bold">
+            Tiempo operando el negocio <span className="font-normal">(Si aplica)</span>
+          </label>
+          <input className="w-full border border-gray-300 rounded p-1.5 text-xs" placeholder="3 años" />
+        </div>
+        <div className="col-span-2">
+          <label className="block text-[11px] font-bold">No. Del dependientes</label>
+          <input className="w-full border border-gray-300 rounded p-1.5 text-xs" placeholder="3" />
+        </div>
+        <div className="col-span-3">
+          <label className="block text-[11px] font-bold">Nombre de Esposo/a o Trabajo</label>
+          <input className="w-full border border-gray-300 rounded p-1.5 text-xs" placeholder="Juan, Ejemplo Rent Car" />
+        </div>
+        <div className="col-span-2">
+          <label className="block text-[11px] font-bold">Teléfonos</label>
+          <input className="w-full border border-gray-300 rounded p-1.5 text-xs" placeholder="809849294, 80955549343" />
+        </div>
+        <div className="col-span-2 flex gap-2">
+          <div className="flex-1">
+            <label className="block text-[11px] font-bold">Banco</label>
+            <input className="w-full border border-gray-300 rounded p-1.5 text-xs" placeholder="Banco Popular" />
+          </div>
+          <div className="flex-1">
+            <label className="block text-[11px] font-bold">No. de Cuenta</label>
+            <input className="w-full border border-gray-300 rounded p-1.5 text-xs" placeholder="111222333444" />
+          </div>
+        </div>
+
+        <div className="col-span-12 flex justify-end gap-2 pt-2">
+          <button
+            type="submit"
+            className="bg-green-600 text-white px-3 py-1.5 text-sm rounded hover:bg-green-700"
+          >
+            Agregar
+          </button>
+          <Link 
+            href="/consulta"
+            type="button"
+            className="bg-green-600 text-white px-3 py-1.5 text-sm rounded hover:bg-green-700"
+          >
+            Buscar
+          </Link >
+        </div>
+      </form>
     </div>
   );
 }
