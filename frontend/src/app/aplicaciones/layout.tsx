@@ -1,10 +1,9 @@
-
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
-import Navbar from "../components/navbar";
+import "../globals.css";
+import Navbar from "../../components/navbar";
 
-const geistSans = Geist({
+  const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
 });
@@ -19,14 +18,17 @@ export const metadata: Metadata = {
   description: "Formulario y consultas de préstamos",
 };
 
-export default function RootLayout({
+export default function AplicacionesLayout({
   children,
-}: Readonly<{ children: React.ReactNode }>) {
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+
   return (
-    <html lang="es">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        {children}
-      </body>
-    </html>
+    <div className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <Navbar /> 
+      <main className="pt-20">{children}</main>
+    </div>
   );
 }
+ 

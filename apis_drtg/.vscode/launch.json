@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-ApisDrtgApplication<apis_drtg>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.apis.drtg.apis_drtg.ApisDrtgApplication",
+            "projectName": "apis_drtg",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}
