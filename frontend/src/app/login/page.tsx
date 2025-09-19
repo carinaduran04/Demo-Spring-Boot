@@ -33,7 +33,7 @@ export default function Login() {
         
         <div className="flex justify-center px-4">
           <Image
-            src="/logo 15.png"   
+            src="/logo15.png"   
             alt="Logo"
             width={90}
             height={90}
