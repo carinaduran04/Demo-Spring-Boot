@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import React, { useState, useEffect } from "react";
+import ScaleIn from "@/components/scaleIn";
 
 
 interface Doctor {
@@ -9,6 +10,10 @@ interface Doctor {
   fullName: string;
   phoneNumber: string;
   doctor_Id: number;
+  medSpeciality?: {
+    medSpecialityId: number;
+    medSpecialityName: string;
+  };
 }
 
 interface Hospital {
@@ -123,27 +128,27 @@ export default function SolicitudPrestamo() {
   };
 
   return (
-    <div className="flex justify-center py-1">
+       <ScaleIn>
+    <div className="flex justify-center py-1 pt-7 ">
       <form
         onSubmit={handleSearch}
-        className="bg-gray-100 border border-green-600 p-6 rounded-xl shadow-md w-full max-w-6xl flex flex-col min-h-[750px]"
+        className="bg-gray-100 border border-green-600 p-4 rounded-xl shadow-md w-full max-w-6xl flex flex-col min-h-[70vh]"
       > 
         <h2 className="text-2xl text-green-700 font-semibold text-center mb-4">Haz tu consulta</h2>
 
           <div className="col-span-12 flex justify-end gap-2 pt-2">
-          <Link
-            href="/aplicaciones/agregar"
-            className="bg-green-600 text-white px-3 py-1.5 text-sm rounded hover:bg-green-700"
-          >
-            Agregar
-          </Link>
-
           <button
             type="submit"
             className="bg-green-600 text-white px-3 py-1.5 text-sm rounded hover:bg-green-700"
           >
             Buscar
           </button>
+          <Link
+            href="/aplicaciones/agregar"
+            className="bg-green-600 text-white px-3 py-1.5 text-sm rounded hover:bg-green-700"
+          >
+            Agregar
+          </Link>
 
           <button
             type="button"
@@ -153,118 +158,107 @@ export default function SolicitudPrestamo() {
             Eliminar
           </button>
         </div>
-         <div className="mt-6"></div>
-<div className="flex flex-row flex-wrap gap-4 mb-6">
-  <div className="flex-1 min-w-[200px]">
-    <label className="block text-base text-green-700 font-bold mb-1">Nombre</label>
-    <input
-      type="text"
-      name="firstName"
-      value={searchParams.firstName}
-      onChange={handleChange}
-      placeholder="Ingrese el nombre"
-      className="w-full border border-green-600 rounded p-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-    />
-  </div>
+              <div className="mt-6"></div>
+      <div className="flex flex-row flex-wrap gap-4 mb-6">
+        <div className="flex-1 min-w-[200px]">
+          <label className="block text-base text-green-700 font-bold mb-1">Nombre</label>
+          <input
+            type="text"
+            name="firstName"
+            value={searchParams.firstName}
+            onChange={handleChange}
+            placeholder="Ingrese el nombre"
+            className="w-full border border-green-600 rounded p-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+          />
+        </div>
 
-  <div className="flex-1 min-w-[200px]">
-    <label className="block text-base text-green-700 font-bold mb-1">Apellido</label>
-    <input
-      type="text"
-      name="lastName"
-      value={searchParams.lastName}
-      onChange={handleChange}
-      placeholder="Ingrese el apellido"
-      className="w-full border border-green-600 rounded p-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-    />
-  </div>
+        <div className="flex-1 min-w-[200px]">
+          <label className="block text-base text-green-700 font-bold mb-1">Apellido</label>
+          <input
+            type="text"
+            name="lastName"
+            value={searchParams.lastName}
+            onChange={handleChange}
+            placeholder="Ingrese el apellido"
+            className="w-full border border-green-600 rounded p-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+          />
+        </div>
 
-  <div className="flex-1 min-w-[200px]">
-    <label className="block text-base text-green-700 font-bold mb-1">Cédula</label>
-    <input
-      type="text"
-      name="cedula"
-      value={searchParams.cedula}
-      onChange={handleChange}
-      placeholder="Ingrese la cédula"
-      className="w-full border border-green-600 rounded p-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-    />
-  </div>
+      
 
-  <div className="flex-1 min-w-[200px]">
-    <label className="block text-base text-green-700 font-bold mb-1">E-Mail</label>
-    <input
-      type="text"
-      name="email"
-      value={searchParams.email}
-      onChange={handleChange}
-      placeholder="Ingrese el E-Mail"
-      className="w-full border border-green-600 rounded p-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-    />
-  </div>
+        <div className="flex-1 min-w-[200px]">
+          <label className="block text-base text-green-700 font-bold mb-1">E-Mail</label>
+          <input
+            type="text"
+            name="email"
+            value={searchParams.email}
+            onChange={handleChange}
+            placeholder="Ingrese el E-Mail"
+            className="w-full border border-green-600 rounded p-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+          />
+        </div>
 
-  <div className="flex-1 min-w-[200px]">
-    <label className="block text-base text-green-700 font-bold mb-1">Teléfono</label>
-    <input
-      type="text"
-      name="phone"
-      value={searchParams.phone}
-      onChange={handleChange}
-      placeholder="Ingrese el teléfono"
-      className="w-full border border-green-600 rounded p-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-    />
-  </div>
+        <div className="flex-1 min-w-[200px]">
+          <label className="block text-base text-green-700 font-bold mb-1">Teléfono</label>
+          <input
+            type="text"
+            name="phone"
+            value={searchParams.phone}
+            onChange={handleChange}
+            placeholder="Ingrese el teléfono"
+            className="w-full border border-green-600 rounded p-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+          />
+        </div>
+      {/*
+        <div className="flex-1 min-w-[200px]">
+          <label className="block text-base text-green-700 font-bold mb-1">Celular</label>
+          <input
+            type="text"
+            name="celular"
+            value={searchParams.celular}
+            onChange={handleChange}
+            placeholder="Ingrese el celular"
+            className="w-full border border-green-600 rounded p-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+          />
+            </div>
+            
+                <div className="flex-1 min-w-[200px]">
+                  <label className="block text-base text-green-700 font-bold mb-1">Ciudad</label>
+                  <input
+                    type="text"
+                    name="ciudad"
+                    value={searchParams.ciudad}
+                    onChange={handleChange}
+                    placeholder="Ingrese la ciudad"
+                    className="w-full border border-green-600 rounded p-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  />
+                </div>
+                */}
+              {/*
+                <div className="flex-1 min-w-[200px]">
+                  <label className="block text-base text-green-700 font-bold mb-1">No. de Cuenta</label>
+                  <input
+                    type="text"
+                    name="accountNumber"
+                    value={searchParams.accountNumber}
+                    onChange={handleChange}
+                    placeholder="Ingrese el No. de Cuenta"
+                    className="w-full border border-green-600 rounded p-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  />
+                </div>
+                */}
+              </div>
 
-  <div className="flex-1 min-w-[200px]">
-    <label className="block text-base text-green-700 font-bold mb-1">Celular</label>
-    <input
-      type="text"
-      name="celular"
-      value={searchParams.celular}
-      onChange={handleChange}
-      placeholder="Ingrese el celular"
-      className="w-full border border-green-600 rounded p-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-    />
-  </div>
-
-  <div className="flex-1 min-w-[200px]">
-    <label className="block text-base text-green-700 font-bold mb-1">Ciudad</label>
-    <input
-      type="text"
-      name="ciudad"
-      value={searchParams.ciudad}
-      onChange={handleChange}
-      placeholder="Ingrese la ciudad"
-      className="w-full border border-green-600 rounded p-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-    />
-  </div>
-
-  <div className="flex-1 min-w-[200px]">
-    <label className="block text-base text-green-700 font-bold mb-1">No. de Cuenta</label>
-    <input
-      type="text"
-      name="accountNumber"
-      value={searchParams.accountNumber}
-      onChange={handleChange}
-      placeholder="Ingrese el No. de Cuenta"
-      className="w-full border border-green-600 rounded p-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-    />
-  </div>
-</div>
 
           <div className="mt-1">
             <div className="mt-4 overflow-x-auto">
-              <table className="min-w-full border border-green-500 rounded-lg shadow-md min-h-[300px]">
+              <table className="min-w-full border border-green-500 rounded-lg shadow-md ">
                 <thead className="bg-green-600 text-white">
                   <tr>
                     <th className="px-6 py-3 text-left text-sm font-semibold uppercase tracking-wide">Nombre</th>
                     <th className="px-6 py-3 text-left text-sm font-semibold uppercase tracking-wide">Apellido</th>
-                    <th className="px-6 py-3 text-left text-sm font-semibold uppercase tracking-wide">Cédula</th>
                     <th className="px-6 py-3 text-left text-sm font-semibold uppercase tracking-wide">E-Mail</th>
                     <th className="px-6 py-3 text-left text-sm font-semibold uppercase tracking-wide">Teléfono</th>
-                    <th className="px-6 py-3 text-left text-sm font-semibold uppercase tracking-wide">Celular</th>
-                    <th className="px-6 py-3 text-left text-sm font-semibold uppercase tracking-wide">Ciudad</th>
-                    <th className="px-6 py-3 text-left text-sm font-semibold uppercase tracking-wide">No. de Cuenta</th>
                     <th className="px-6 py-3 text-center text-sm font-semibold uppercase tracking-wide">Acción</th>
                   </tr>
                 </thead>
@@ -281,17 +275,16 @@ export default function SolicitudPrestamo() {
                         Error al cargar los datos: {error}
                       </td>
                     </tr>
+                
                   ) : appointments.length > 0 ? (
                     appointments.map((appointment) => (
                       <tr key={appointment.id}>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">{appointment.firstName}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">{appointment.lastName}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">{appointment.cedula || "N/A"}</td>
+                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">{appointment.lastName}</td>
+                        {/*<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">{appointment.cedula || "N/A"}</td>*/}
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">{appointment.email}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">{appointment.phone}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">{appointment.celular || "N/A"}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">{appointment.ciudad || "N/A"}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">{appointment.noCuenta || "N/A"}</td>
+         
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
                          
                          <Link
@@ -316,5 +309,6 @@ export default function SolicitudPrestamo() {
           </div>
       </form>
     </div>
+    </ScaleIn>
   );
 }

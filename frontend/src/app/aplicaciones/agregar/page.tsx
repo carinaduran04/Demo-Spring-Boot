@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import ScaleIn from "@/components/scaleIn";
 
 
 export default function SolicitudPrestamo() {
@@ -7,27 +8,32 @@ export default function SolicitudPrestamo() {
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => e.preventDefault();
 
   return (
-    <div className="max-w-6xl mx-auto p-4">
+    <ScaleIn>
+    <div className="flex justify-center py-1 pt-9 ">
       
       <form
         onSubmit={onSubmit}
-        className="grid  gap-2 bg-gray-100 border-2 border-green-500 p-4 rounded-xl shadow"
+        className="grid gap-2 bg-gray-100 border-2 border-green-500 p-4 rounded-xl shadow"
       >
-            <h2 className="text-lg center text-green-700 font-semibold text-center mb-4 w-full">Haz tu consulta</h2>
-          <div className="col-span-12 flex justify-end gap-2 pt-2">
+          <div className="col-span-12 flex justify-center">
+              <h2 className="text-2xl text-green-700 font-semibold">
+                Haz tu consulta
+              </h2>
+          </div>
+
+         <div className="col-span-12 flex justify-end gap-2 pt-2">
           <button
             type="submit"
             className="bg-green-600 text-white px-3 py-1.5 text-sm rounded hover:bg-green-700"
           >
             Agregar
           </button>
-          <Link 
+         <Link 
             href="/consulta"
-            type="button"
-            className="bg-green-600 text-white px-3 py-1.5 text-sm rounded hover:bg-green-700"
+            className="bg-green-600 text-white px-3 py-1.5 text-sm rounded hover:bg-green-700 inline-block text-center"
           >
             Buscar
-          </Link >
+          </Link>
         </div>
         
         <div className="col-span-3">
@@ -147,9 +153,9 @@ export default function SolicitudPrestamo() {
             <input className="w-full border border-green-500  rounded p-1.5 text-xs" placeholder="111222333444" />
           </div>
         </div>
-
       
       </form>
     </div>
+    </ScaleIn>
   );
 }

@@ -27,7 +27,7 @@ export default function AplicacionesLayout({
   return (
     <div className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
       <Navbar /> 
-      <main className="pt-20">{children}</main>
+      <main className="pt-8">{children}</main>
     </div>
   );
 }

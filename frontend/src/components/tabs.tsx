@@ -5,8 +5,10 @@ import { useState } from "react";
 const tabs = [
   { id: "persona", label: "Informacion personal" },
   { id: "contactos", label: "Contactos" },
-  { id: "documentos", label: "Documentos" },
-  { id: "extra", label: "Informacion Extra " },
+  { id: "doctor", label: "Doctor" },
+  { id: "mensaje", label: "Mensaje " },
+   { id: "consulta", label: "Consulta" }, 
+
 ];
 
 export default function Tabs({ onTabChange }: { onTabChange: (tab: string) => void }) {

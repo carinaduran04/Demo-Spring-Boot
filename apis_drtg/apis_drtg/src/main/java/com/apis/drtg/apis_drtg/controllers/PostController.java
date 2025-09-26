@@ -10,10 +10,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.apis.drtg.apis_drtg.models.MedAppointment;
-import com.apis.drtg.apis_drtg.models.MedAppointmentsDTO;
 import com.apis.drtg.apis_drtg.models.MedDoctor;
+import com.apis.drtg.apis_drtg.models.user.MedUser;
 import com.apis.drtg.apis_drtg.services.MedAppointmentService;
 import com.apis.drtg.apis_drtg.services.MedDoctorService;
+import com.apis.drtg.apis_drtg.services.MedUserService;
+
 
 
 
@@ -27,6 +29,9 @@ public class PostController {
     @Autowired
     private MedDoctorService doctorService;
 
+    @Autowired
+    private MedUserService userService;
+
     @GetMapping("/appointment/all")
     public List<MedAppointment> AppointmentsAll(){
         
@@ -34,12 +39,12 @@ public class PostController {
         return appointments;
     }
 
-    @GetMapping("/appointment/{id}")
+    /*@GetMapping("/appointment/{id}")
     public List<MedAppointmentsDTO> AppointmentsByID(@PathVariable int id){
         
         List<MedAppointmentsDTO> appointments = appointmentService.getAppointmentById(id);
         return appointments;
-    }
+    }*/
 
     @GetMapping("/doctor/all")
     public List<MedDoctor> DoctorsAll(){
@@ -49,6 +54,12 @@ public class PostController {
     @GetMapping("/doctor/{id}")
     public Optional<MedDoctor> DoctorsById(@PathVariable int id){
         return doctorService.getDoctorsById(id);
+    }
+    
+
+    @GetMapping("/user/all")
+    public List<MedUser> getMethodName() {
+        return userService.getAllUsers();
     }
     
     

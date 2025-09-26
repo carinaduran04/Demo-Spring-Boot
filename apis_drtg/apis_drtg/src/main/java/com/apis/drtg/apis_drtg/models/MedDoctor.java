@@ -1,8 +1,11 @@
 package com.apis.drtg.apis_drtg.models;
 
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -30,5 +33,10 @@ public class MedDoctor {
 
     @Column(name="Phone_Number")
     private String phoneNumber;
+
+    //Especialidad Nueva Tabla
+    @ManyToOne
+    @JoinColumn(name="Speciality_Id")
+    private MedSpeciality medSpeciality;
 
 }

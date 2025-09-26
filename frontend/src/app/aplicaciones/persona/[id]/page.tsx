@@ -4,6 +4,7 @@ import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import PersonForm from '@/components/persona';
 
+
 interface PersonData {
   nombre?: string;
   apellidos?: string;
@@ -13,7 +14,25 @@ interface PersonData {
   cuenta?: string;
   email?: string;
   telefono?: string;
-  // agrega otros campos si los necesitas
+  tipoConsulta?: string;
+  fechaConsulta?: string
+
+  // doctor
+  doctorNombre?: string;
+  doctorApellidos?: string;
+  doctorClinica?: string;
+  doctorCiudad?: string;
+  doctorTelefono?: string;
+  doctorEmail?: string;
+  especialidad?: string;
+
+  // mensaje
+  mensaje?: string;
+
+ 
+  // consulta
+ 
+
 }
 
 export default function PersonaDetalle() {
@@ -26,23 +45,36 @@ export default function PersonaDetalle() {
   useEffect(() => {
     async function fetchPerson() {
       try {
-        const res = await fetch('/api/appointment/all'); // Trae todos los registros
+        const res = await fetch('/api/appointment/all'); 
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
         const allPersons = await res.json();
 
-        const persona = allPersons.find((p: any) => p.id === Number(id)); // Filtra por id
+        const persona = allPersons.find((p: any) => p.id === Number(id));
 
         if (persona) {
-          // Mapea los campos de la API al formulario
           setData({
-            nombre: persona.firstName,
-            apellidos: persona.lastName,
-            cedula: persona.cedula,
-            celular: persona.celular,
-            ciudad: persona.ciudad,
-            cuenta: persona.noCuenta,
-            email: persona.email,
-            telefono: persona.phone,
+              nombre: persona.firstName,
+              apellidos: persona.lastName,
+              cedula: persona.cedula || '',
+              celular: persona.celular || '',
+              ciudad: persona.ciudad || '',
+              cuenta: persona.noCuenta || '',
+              email: persona.email,
+              telefono: persona.phone,
+               /*tipoConsulta: persona.sdsw;*/
+               /*fehcaConsulta: persona.njn;*/
+
+
+              doctorNombre: persona.doctor?.fullName || '',
+              doctorApellidos: persona.doctor?.lastName || '',
+              doctorClinica: persona.hospital?.hospitalName || '',
+              doctorCiudad: persona.hospital?.medAddress?.city?.name || '',
+              doctorTelefono: persona.doctor?.phoneNumber || '',
+              doctorEmail: '',
+
+              especialidad: persona.doctor?.medSpeciality?.medSpecialityName || '',
+
+              mensaje: persona.comment || '',
           });
         } else {
           setData(null);

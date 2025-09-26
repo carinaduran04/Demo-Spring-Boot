@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.apis.drtg.apis_drtg.models.MedAppointment;
-import com.apis.drtg.apis_drtg.models.MedAppointmentsDTO;
 import com.apis.drtg.apis_drtg.repositories.MedAppointmentRepository;
 
 @Service
@@ -19,7 +18,7 @@ public class MedAppointmentService {
         return repository.findAll();
     }
 
-    public List<MedAppointmentsDTO> getAppointmentById(int id) {
+    /*public List<MedAppointmentsDTO> getAppointmentById(int id) {
         return repository.listAppointments(id);
-    }
+    }*/
 }
