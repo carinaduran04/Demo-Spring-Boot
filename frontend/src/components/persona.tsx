@@ -17,7 +17,7 @@ interface PersonData {
   email?: string;
   direccion?: string;
   tipoConsulta?: string;
-  fechaConsulta: Date;
+  fechaConsulta?: string;
   doctorNombre?: string;
   doctorApellidos?: string;
   doctorClinica?: string;
@@ -30,7 +30,7 @@ interface PersonData {
 }
 
 interface Props {
-  data: PersonData;
+  data?: PersonData;
 }
 
 export default function PersonForm({ data }: Props) {
@@ -56,7 +56,7 @@ export default function PersonForm({ data }: Props) {
     direccion: data?.direccion|| "",
     tipoConsulta: data?.tipoConsulta || "",
 
-    fechaConsulta: data.fechaConsulta || "",
+    fechaConsulta: data?.fechaConsulta || "",
     doctorNombre: data?.doctorNombre || "",
     doctorApellidos: data?.doctorApellidos || "",
     doctorClinica: data?.doctorClinica || "",
@@ -416,17 +416,22 @@ export default function PersonForm({ data }: Props) {
               />
               <InputField
                 label="Fecha de la consulta"
-                value={form.fechaConsulta.toLocaleString("es-US", {
-                      day: "2-digit",
-                      month: "2-digit",
-                      year: "numeric"
-                     
-                    })}
+                value={form.fechaConsulta}
                 readOnly={!isEditing}
                 className="col-span-5"
                 onChange={(v) => handleChange("fechaConsulta", v)}
               />
 
+                              <span className="text-xs">
+                    Último acceso: {new Date().toLocaleString("es-US", {
+                      day: "2-digit",
+                      month: "2-digit",
+                      year: "numeric",
+                      hour: "numeric",
+                      minute: "numeric",
+                      hour12: true
+                    })}
+                  </span>
               <TextAreaField
                 label="Mensaje recibido"
                 value={form.mensaje || ""}
