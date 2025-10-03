@@ -3,7 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "../globals.css";
 import Navbar from "../../components/navbar";
 
-  const geistSans = Geist({
+const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
 });
@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Sistema de Préstamos",
+  title: "DRTG  CLOUD TECHNOLOGY",
   description: "Formulario y consultas de préstamos",
 };
 
@@ -22,12 +22,13 @@ export default function AplicacionesLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
-}>) {
+}>) 
+  {
 
   return (
     <div className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
       <Navbar /> 
-      <main className="pt-8">{children}</main>
+      <main className="flex-grow">{children}</main>
     </div>
   );
 }

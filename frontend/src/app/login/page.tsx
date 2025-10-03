@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { FaUser, FaLock, FaFacebook, FaInstagram, FaTwitter, FaYoutube } from "react-icons/fa";
 import Image from "next/image";
 import FooterPage from "@/components/footer"; 
+import Link from "next/link";
 
 
 interface User {
@@ -23,7 +24,7 @@ export default function Login() {
 
   const handleLogin = async () => {
     try {
-      const res = await fetch("/api/user/all");
+      const res = await fetch("/api/appointmentuser/all");
       const raw = await res.json();
       console.log("📌 Respuesta de la API:", raw);
 
@@ -48,7 +49,8 @@ export default function Login() {
       );
 
       if (validUser) {
-        localStorage.setItem("user", JSON.stringify(validUser));
+      console.log("Usuario logueado:", validUser);
+      localStorage.setItem("user", JSON.stringify(validUser));
 
         if (validUser.id === 1) {
           router.push("/aplicaciones/inicio");
@@ -67,25 +69,64 @@ export default function Login() {
   };
 
   return (
-    <div className="relative bg-white flex flex-col  items-center  max-h-[93vh] h-screen  ">
+    <div className="relative bg-white flex flex-col  items-center min-h-screen">
+      <div className="w-full px-8 pt-2 relative">
+        <div className="flex items-center">
+          
+          <Image src="/logo16.png" alt="Logo" width={140} height={80} />
 
-  <div className="w-full px-8 pt-2 relative">
-    <div className="flex items-center">
+          <div className="flex-1 relative ml-4">
+            <h1 className="inline-flex text-[1.5rem] font-semibold text-green-700 group text-2xl relative z-10 bg-white pr-2">
+              <span>DRT</span>
+              <span className="overflow-hidden transition-all duration-500 group-hover:w-[3ch] w-0">
+                <span className="inline-block">ech</span>
+              </span>
+              <span>G</span>
+              <span className="overflow-hidden transition-all duration-500 group-hover:w-[4ch] w-0">
+                <span className="inline-block">roup</span>
+              </span>
+            </h1>
+            <p className="text-xs text-green-800 opacity-90">
+                  Pembroke Pines Florida 33025
+                </p>
 
-      <Image src="/logo16.png" alt="Logo" width={150} height={80} />
+        <div className="relative">
+        <div className="absolute left-0 right-0 top-full mt-1 border-t-4 border-green-400"></div>
 
-      <div className="flex-1 border-t-4 border-green-500 ml-2 relative ">
-        <span className="absolute -top-9 right-0 bg-green-450 text-green-800 text-xs font-semibold px-3 py-1 rounded-lg shadow-md">
-          {new Date().toLocaleDateString()}
-        </span>
+        <div className="absolute -top-12 right-0 bg-green-450 text-green-800 text-xs font-semibold px-3 py-1 rounded-lg shadow-md flex flex-col gap-1">
+          <div className="flex items-center gap-1">
+            <span className="font-bold">Fecha:</span>
+            <span>
+              {new Date().toLocaleDateString("es-ES", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+              })}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-1">
+            <span className="font-bold">Hora:</span>
+            <span>
+              {new Date().toLocaleTimeString("es-ES", {
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: true,
+              })}
+            </span>
+          </div>
+        </div>
       </div>
     </div>
   </div>
-  
-  <div className="bg-gray-200 shadow-md rounded-md w-[350px] max-h-[90vh] p-8 flex flex-col justify-between overflow-hidden ">
-    <div className="flex justify-center px-4  ">
-      <Image src="/logo15.png" alt="Logo" width={90} height={90} className="w-2/4" />
-    </div> 
+</div>
+
+
+        
+        <div className="bg-gray-200 shadow-md rounded-md w-[330px] max-h-[89vh] p-8 flex flex-col justify-between overflow-hidden ">
+          <div className="flex justify-center px-4  ">
+            <Image src="/logo15.png" alt="Logo" width={80} height={80} className="w-2/4" />
+          </div> 
 
     <div className="flex mb-4  mt-2">
       {(["personal", "empresarial"] as const).map((t) => (
@@ -135,17 +176,26 @@ export default function Login() {
       {error && <p className="text-red-600 text-center text-sm">{error}</p>}
     </form>
 
-    <hr className="border-gray-400 my-2 mt-8" />
-   
+    <hr className="border-gray-400 my-2 mt-3" />
+        <div className="flex flex-col gap-2 text-center mt-2">
+          <Link href="/aplicaciones/clave" className="text-black hover:underline cursor-pointer">
+            Olvidé mi Clave
+          </Link>
 
-    <div className="flex flex-col items-center gap-6 text-green-600 text-lg mt-4">
-      <div className="flex gap-5">
+          <Link href="/aplicaciones/contrasena" className="text-black hover:underline cursor-pointer">
+            Cambiar mi Contraseña
+          </Link>
+        </div>
+     <hr className="border-gray-400 my-2 mt-3" />
+
+    <div className="flex flex-col items-center gap-4 text-green-600 text-lg mt-0">
+      <div className="flex gap-3">
         <FaFacebook className="text-4xl" />
         <FaInstagram className="text-4xl" />
         <FaTwitter className="text-4xl" />
         <FaYoutube className="text-4xl" />
       </div>
-      <p className="text-black text-base">
+      <p className="text-black text-base mt-0">
         Síguenos en nuestras redes sociales
       </p>
     </div>  

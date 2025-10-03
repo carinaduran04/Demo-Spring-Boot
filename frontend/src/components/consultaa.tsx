@@ -20,7 +20,7 @@ export default function ConsultaForm({ data }: ConsultaFormProps) {
     mensaje: "",
   });
 
-  // ✅ Prellenar si vienen datos de persona
+  //  Prellenar si vienen datos de persona
   useEffect(() => {
     if (data) {
       setFormData((prev) => ({
@@ -47,7 +47,7 @@ export default function ConsultaForm({ data }: ConsultaFormProps) {
 
     try {
       const res = await fetch("/api/consultas", {
-        method: "POST",
+        method: "GET",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });

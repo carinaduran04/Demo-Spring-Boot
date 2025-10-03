@@ -26,7 +26,7 @@ export default function Navbar() {
   };
 
   return (
-    <div className=" top-0 left-0 right-0 z-50">
+    <div className=" top-0 left-0 right-0 z-40">
       <nav className="bg-green-600 text-white font-semibold px-14 py-2 shadow-md w-full">
         <div className="relative flex items-center justify-between">
        
@@ -52,7 +52,7 @@ export default function Navbar() {
                 </h1>
 
                 <p className="text-xs text-white opacity-90">
-                  Pembroke Pines Florida 33025 📍
+                  Pembroke Pines Florida 33025
                 </p>
               </div>
 

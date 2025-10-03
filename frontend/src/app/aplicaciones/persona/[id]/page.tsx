@@ -15,6 +15,7 @@ interface PersonData {
   email?: string;
   telefono?: string;
   tipoConsulta?: string;
+  direccion?: string 
   fechaConsulta?: string
 
   // doctor
@@ -45,36 +46,35 @@ export default function PersonaDetalle() {
   useEffect(() => {
     async function fetchPerson() {
       try {
-        const res = await fetch('/api/appointment/all'); 
+        const res = await fetch('/api/appointmentdetail/all'); 
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
         const allPersons = await res.json();
 
-        const persona = allPersons.find((p: any) => p.id === Number(id));
+     const persona = allPersons.find((p: any) => p.appointmentDtlId === Number(id));
 
         if (persona) {
           setData({
-              nombre: persona.firstName,
-              apellidos: persona.lastName,
-              cedula: persona.cedula || '',
-              celular: persona.celular || '',
-              ciudad: persona.ciudad || '',
-              cuenta: persona.noCuenta || '',
-              email: persona.email,
-              telefono: persona.phone,
-               /*tipoConsulta: persona.sdsw;*/
-               /*fehcaConsulta: persona.njn;*/
+            nombre: persona.firstName,
+            apellidos: persona.lastName,
+            cedula: persona.cedula || '',
+            celular: persona.celular || '',
+            ciudad: persona.appointmentAddress?.city || '',
+            cuenta: persona.noCuenta || '',
+            email: persona.email || '',
+            telefono: persona.phone,
+            tipoConsulta: persona.consultingType || '',
+            fechaConsulta: persona.consultingDate || '',
+            direccion: persona.appointmentAddress?.address || '',
 
+            doctorNombre: persona.userId?.fullName || '',
+            doctorApellidos: persona.userId?.lastName || '',
+            doctorClinica: persona.userId?.title || '',
+            doctorCiudad: persona.userId?.appointmentAddress?.city || '',
+            doctorTelefono: persona.userId?.phoneNumber || '',
+            doctorEmail: persona.userId?.email || '',
+            especialidad: persona.userId?.appointmentUserType?.name || '',
 
-              doctorNombre: persona.doctor?.fullName || '',
-              doctorApellidos: persona.doctor?.lastName || '',
-              doctorClinica: persona.hospital?.hospitalName || '',
-              doctorCiudad: persona.hospital?.medAddress?.city?.name || '',
-              doctorTelefono: persona.doctor?.phoneNumber || '',
-              doctorEmail: '',
-
-              especialidad: persona.doctor?.medSpeciality?.medSpecialityName || '',
-
-              mensaje: persona.comment || '',
+            mensaje: persona.comment || '',
           });
         } else {
           setData(null);
@@ -89,13 +89,13 @@ export default function PersonaDetalle() {
 
     fetchPerson();
   }, [id]);
-
+{console.log(data)}
   if (loading) return <div className="mt-20 p-4 text-center">Cargando...</div>;
   if (error) return <div className="mt-20 p-4 text-center text-red-500">{error}</div>;
-  if (!data) return <div className="mt-20 p-4 text-center">No se encontró la persona</div>;
+  if (!data) return  <div className="mt-20 p-4 text-center">No se encontró la persona </div>;
 
   return (
-    <div className="mt-20 p-4">
+    <div className="10 p-4">
       <PersonForm data={data} />
     </div>
   );

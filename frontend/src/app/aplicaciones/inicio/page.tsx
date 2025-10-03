@@ -10,7 +10,7 @@ export default function SolicitudPrestamo() {
 
   return (
     <ScaleIn>
-   <div className="flex flex-col items-center justify-center min-h-[60vh] bg-white">
+   <div className="m-9 flex flex-col items-center justify-center min-h-[60vh] bg-white">
 
       <section className="text-center p-4">
         <div>

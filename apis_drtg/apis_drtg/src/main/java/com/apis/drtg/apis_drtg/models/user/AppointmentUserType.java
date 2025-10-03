@@ -1,4 +1,4 @@
-package com.apis.drtg.apis_drtg.models;
+package com.apis.drtg.apis_drtg.models.user;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -9,15 +9,17 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "MED_CITY_DIM")
+@Table(name="APP_USER_TYPE_DIM")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class MedCity {
+public class AppointmentUserType {
     @Id
-    @Column(name = "City_Id")
-    private int cityId;
+    @Column(name="USER_TYPE_ID")
+    private int userTypeId;
 
-    @Column(name = "Name")
+    @Column(name="NAME")
     private String name;
+    
+
 }
