@@ -33,4 +33,6 @@ public class AppointmentAddress {
     @Column(name="LAST_UPDATE_DATE")
     private String lastUpdateDate;
 
+    
+    
 }

@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from "react";
 import ScaleIn from "./scaleIn";
-import { useRouter } from "next/navigation";
+import { useRouter , useParams } from "next/navigation";
 
 interface PersonData {
+  id?: number;
   nombre?: string;
   apellidos?: string;
   apodo?: string;
@@ -34,6 +35,8 @@ interface Props {
 }
 
 export default function PersonForm({ data }: Props) {
+   const params = useParams();
+  const idFromUrl = params?.id ? Number(params.id) : 0;
     const router = useRouter();
   const visibleTabs = [ "consulta"];
   //"persona", "contactos", "doctor", "mensaje", "consulta"
@@ -43,6 +46,7 @@ export default function PersonForm({ data }: Props) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const [form, setForm] = useState<PersonData>({
+    id: data?.id || idFromUrl || 0,
     nombre: data?.nombre || "",
     apellidos: data?.apellidos || "",
     apodo: data?.apodo || "",
@@ -96,11 +100,49 @@ export default function PersonForm({ data }: Props) {
   };
 
     // solo marca como inactivo
-  const handleDelete = () => {
-    setForm((prev) => ({ ...prev, activo: false }));
-    alert("Registro eliminado correctamente");
+
+  const handleDelete = async () => {
+  const idToDelete = form.id || idFromUrl;
+
+  console.log("ID del registro a eliminar:", idToDelete);
+
+  if (!idToDelete || idToDelete === 0) {
+    alert("⚠️ No se puede eliminar: falta el ID válido");
+    return;
+  }
+
+  const confirmacion = window.confirm("¿Seguro que deseas eliminar esta cita?");
+  if (!confirmacion) return;
+
+  try {
+  const respuesta = await fetch(`/api/appointmentdetail/delete/${idToDelete}`, {
+  method: "DELETE",
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
+    if (!respuesta.ok) {
+      throw new Error(`Error del servidor: ${respuesta.status}`);
+    }
+
+    const mensaje = await respuesta.text();
+    console.log("Servidor:", mensaje);
+
+    setForm((prev) => ({
+      ...prev,
+      activo: false,
+    }));
+
+    alert(" Cita marcada como INACTIVA correctamente");
+
     router.push("/aplicaciones/consulta");
-  };
+  } catch (error) {
+    console.error("Error al eliminar:", error);
+    alert("Ocurrió un error al eliminar la cita");
+  }
+};
+
   return (
     <ScaleIn>
      <div className=" my-auto">
@@ -150,7 +192,6 @@ export default function PersonForm({ data }: Props) {
                     >
                       Confirmar eliminar
                     </button>
-
                     <button
                       type="button"
                       className="bg-gray-400 text-white px-4 py-2 text-sm rounded hover:bg-gray-500"
@@ -160,6 +201,7 @@ export default function PersonForm({ data }: Props) {
                     </button>
                   </>
                 )}
+
               </>
             ) : (
               <>
@@ -375,7 +417,7 @@ export default function PersonForm({ data }: Props) {
                 label="Nombre"
                 value={form.nombre}
                 readOnly={!isEditing}
-                className="col-span-3"
+                className="col-span-2"
                 onChange={(v) => handleChange("nombre", v)}
               />
               <InputField
@@ -384,6 +426,14 @@ export default function PersonForm({ data }: Props) {
                 readOnly={!isEditing}
                 className="col-span-3"
                 onChange={(v) => handleChange("apellidos", v)}
+              />
+               <InputField
+                label="Direccion"
+                type="text"
+                value={form.direccion}
+                readOnly={!isEditing}
+                className="col-span-3"
+                onChange={(v) => handleChange("direccion", v)}
               />
               <InputField
                 label="Correo"
@@ -407,31 +457,26 @@ export default function PersonForm({ data }: Props) {
                 className="col-span-3"
                 onChange={(v) => handleChange("tipoConsulta", v)}
               />
-               <InputField
-                label="Direccion"
-                value={form.direccion}
-                readOnly={!isEditing}
-                className="col-span-4"
-                onChange={(v) => handleChange("direccion", v)}
-              />
-              <InputField
+              
+             <InputField
                 label="Fecha de la consulta"
-                value={form.fechaConsulta}
+                value={
+                  form.fechaConsulta
+                    ? new Date(form.fechaConsulta).toLocaleString("en-US", {
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        hour12: true
+                      })
+                    : ""
+                }
                 readOnly={!isEditing}
                 className="col-span-5"
                 onChange={(v) => handleChange("fechaConsulta", v)}
               />
 
-                              <span className="text-xs">
-                    Último acceso: {new Date().toLocaleString("es-US", {
-                      day: "2-digit",
-                      month: "2-digit",
-                      year: "numeric",
-                      hour: "numeric",
-                      minute: "numeric",
-                      hour12: true
-                    })}
-                  </span>
               <TextAreaField
                 label="Mensaje recibido"
                 value={form.mensaje || ""}
@@ -466,7 +511,7 @@ export default function PersonForm({ data }: Props) {
           }) {
             return (
               <div className={className}>
-                <label className="block text-xs font-bold text-gray-600 mb-1">
+                <label className="block text-xs font-bold text-green-700 mb-1">
                   {label}
                 </label>
                 <input
@@ -497,7 +542,7 @@ export default function PersonForm({ data }: Props) {
           }) {
             return (
               <div className={className}>
-                <label className="block text-xs font-bold text-gray-600 mb-1">
+                <label className="block text-xs font-bold text-green-600 mb-1">
                   {label}
                 </label>
                 <textarea

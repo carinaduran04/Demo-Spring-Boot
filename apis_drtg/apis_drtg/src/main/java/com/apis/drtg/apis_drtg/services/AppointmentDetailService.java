@@ -17,13 +17,24 @@ public class AppointmentDetailService {
     public List<AppointmentDetail> getAllApointments(){
         return repository.findAll();
     }
-
+    
     public Optional<AppointmentDetail> getAppointmentById(int id){
         return repository.findById(id);
     }
 
     public AppointmentDetail saveAppointment( AppointmentDetail  appointmentDetail){
         return repository.save(appointmentDetail);
+    }
+
+    public void softDeleteAppointment(int id) {
+        AppointmentDetail detail = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Cita no encontrada"));
+        detail.setStatus("INACTIVO");
+        repository.save(detail);
+    }
+
+    public List<AppointmentDetail> getActiveAppointments() {
+        return repository.findByStatus("ACTIVO");
     }
 }
 

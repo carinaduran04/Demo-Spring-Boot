@@ -137,50 +137,59 @@ export default function SolicitudPrestamo() {
     accountNumber: "",
     direccion: "",
   });
+  // Obtener el usuario logueado desde localStorage
+  const storedUser = typeof window !== "undefined" ? localStorage.getItem("user") : null;
+  const currentUser = storedUser ? JSON.parse(storedUser) : null;
 
   useEffect(() => {
     async function fetchAllAppointments() {
       try {
-        const response = await fetch("/api/appointmentdetail/all"); 
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
+        const response = await fetch("/api/appointmentdetail/all");
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const data: Appointment[] = await response.json();
-        setAllAppointments(data);
-        setAppointments(data);
+
+        console.log("Datos crudos de la API:", data);
+
+        // Filtrar solo registros ACTIVE
+        const activos = data.filter(
+          (appointment) => appointment.status.toLowerCase() === "active"
+        );
+
+        const userAppointments = currentUser
+          ? activos.filter(
+              (appointment) =>
+                appointment.userId?.userName.toLowerCase() === currentUser.name.toLowerCase()
+            )
+          : activos;
+
+        setAllAppointments(userAppointments);
+        setAppointments(userAppointments);
       } catch (e: unknown) {
-        if (e instanceof Error) {
-          setError(e.message);
-        } else {
-          setError("An unknown error occurred.");
-        }
+        if (e instanceof Error) setError(e.message);
+        else setError("An unknown error occurred.");
       } finally {
         setIsLoading(false);
       }
     }
+
     fetchAllAppointments();
-  }, []);
+  }, [currentUser]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setSearchParams(prev => ({
-      ...prev,
-      [name]: value,
-    }));
+    setSearchParams((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const filteredAppointments = allAppointments.filter(appointment => {
+
+    const filteredAppointments = allAppointments.filter((appointment) => {
       const firstNameMatch =
         searchParams.firstName === "" ||
         appointment.firstName.toLowerCase().includes(searchParams.firstName.toLowerCase());
       const lastNameMatch =
         searchParams.lastName === "" ||
         appointment.lastName.toLowerCase().includes(searchParams.lastName.toLowerCase());
-      /*const cedulaMatch =
-        searchParams.cedula === "" ||
-        (appointment.cedula && appointment.cedula.toLowerCase().includes(searchParams.cedula.toLowerCase()));*/
       const emailMatch =
         searchParams.email === "" ||
         appointment.email.toLowerCase().includes(searchParams.email.toLowerCase());
@@ -189,7 +198,9 @@ export default function SolicitudPrestamo() {
         appointment.phone.toLowerCase().includes(searchParams.phone.toLowerCase());
       const direccionMatch =
         searchParams.direccion === "" ||
-        appointment.appointmentAddress?.address.toLowerCase().includes(searchParams.direccion.toLowerCase());
+        appointment.appointmentAddress?.address
+          .toLowerCase()
+          .includes(searchParams.direccion.toLowerCase());
 
       return firstNameMatch && lastNameMatch && emailMatch && phoneMatch && direccionMatch;
     });
@@ -204,68 +215,23 @@ export default function SolicitudPrestamo() {
           onSubmit={handleSearch}
           className="bg-gray-100 border border-green-600 p-4 rounded-xl shadow-md w-full max-w-7xl flex flex-col min-h-[70vh]"
         >
-          <h2 className="text-2xl text-green-700 font-semibold text-center mb-4">Haz tu consulta</h2>
+          <h2 className="text-4xl text-green-700 font-semibold text-center mb-4">Haz tu consulta</h2>
 
-          <div className="col-span-12 flex justify-end gap-2 pt-2">
-            <button
-              type="submit"
-              className="bg-green-600 text-white px-3 py-1.5 text-sm rounded hover:bg-green-700"
-            >
-              Buscar
-            </button>
-           <button
-  type="button"
-  className="bg-green-600 text-white px-3 py-1.5 text-sm rounded hover:bg-green-700"
-  onClick={async () => {
-    try {
-      const newAppointment = {
-        firstName: searchParams.firstName,
-        lastName: searchParams.lastName,
-        address: searchParams.direccion,
-        email: searchParams.email,
-        phone: searchParams.phone,
-      
-      };
+       <div className="col-span-12 flex justify-end gap-2 pt-2">
+          <button
+            type="submit"
+            className="bg-green-600 text-white px-3 py-1.5 text-3x1 rounded hover:bg-green-700"
+          >
+            Buscar
+          </button>
 
-      const response = await fetch("/api/appointmentdetail/save", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(newAppointment),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Error al agregar: ${response.status}`);
-      }
-
-      const createdAppointment = await response.json();
-
-     
-      setAppointments((prev) => [...prev, createdAppointment]);
-      setAllAppointments((prev) => [...prev, createdAppointment]);
-
-      alert("Registro agregado exitosamente!");
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        alert(error.message);
-      } else {
-        alert("Ocurrió un error desconocido al agregar el registro.");
-      }
-    }
-  }}
->
-  Agregar
-</button>
-
-            <button
-              type="button"
-              className="bg-green-600 text-white px-3 py-1.5 text-sm rounded hover:bg-green-700"
-              onClick={() => alert("¿Seguro que deseas eliminar?")}
-            >
-              Eliminar
-            </button>
-          </div>
+          <Link
+            href="/aplicaciones/haz_consulta"
+            className="bg-green-600 text-white px-3 py-1.5 text-3x1 rounded hover:bg-green-700 flex items-center justify-center"
+          >
+            Citas
+          </Link>
+        </div>
 
           <div className="mt-6"></div>
           <div className="flex flex-row flex-wrap gap-4 mb-6">
@@ -277,7 +243,7 @@ export default function SolicitudPrestamo() {
                 value={searchParams.firstName}
                 onChange={handleChange}
                 placeholder="Ingrese el nombre"
-                className="w-full border border-green-600 rounded p-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full border border-green-600 rounded p-2 text-2x1 focus:outline-none focus:ring-1 focus:ring-blue-500"
               />
             </div>
 
@@ -289,7 +255,7 @@ export default function SolicitudPrestamo() {
                 value={searchParams.lastName}
                 onChange={handleChange}
                 placeholder="Ingrese el apellido"
-                className="w-full border border-green-600 rounded p-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full border border-green-600 rounded p-2 text-2x1 focus:outline-none focus:ring-1 focus:ring-blue-500"
               />
             </div>
 
@@ -301,7 +267,7 @@ export default function SolicitudPrestamo() {
                 value={searchParams.direccion}
                 onChange={handleChange}
                 placeholder="Ingrese la dirección"
-                className="w-full border border-green-600 rounded p-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full border border-green-600 rounded p-2 text-2x1 focus:outline-none focus:ring-1 focus:ring-blue-500"
               />
             </div>
 
@@ -313,7 +279,7 @@ export default function SolicitudPrestamo() {
                 value={searchParams.email}
                 onChange={handleChange}
                 placeholder="Ingrese el E-Mail"
-                className="w-full border border-green-600 rounded p-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full border border-green-600 rounded p-2 text-2x1 focus:outline-none focus:ring-1 focus:ring-blue-500"
               />
             </div>
 
@@ -325,7 +291,7 @@ export default function SolicitudPrestamo() {
                 value={searchParams.phone}
                 onChange={handleChange}
                 placeholder="Ingrese el teléfono"
-                className="w-full border border-green-600 rounded p-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full border border-green-600 rounded p-2 text-2x1 focus:outline-none focus:ring-1 focus:ring-blue-500"
               />
             </div>
           </div>

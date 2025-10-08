@@ -48,14 +48,24 @@ export default function Login() {
         (u) => u.name === user.trim().toLowerCase() && u.pass === pass.trim()
       );
 
-      if (validUser) {
-      console.log("Usuario logueado:", validUser);
-      localStorage.setItem("user", JSON.stringify(validUser));
+       if (validUser) {
+        console.log("Usuario logueado:", validUser);
 
+        // Guardar solo lo necesario en localStorage
+        localStorage.setItem(
+          "user",
+          JSON.stringify({
+            id: validUser.id,
+            name: validUser.name,
+            fullName: validUser.fullName
+          })
+        );
+
+        // Redirección según el usuario
         if (validUser.id === 1) {
           router.push("/aplicaciones/inicio");
         } else if (validUser.id === 2 || validUser.id === 3) {
-          router.push("/aplicaciones/consulta");
+          router.push("/aplicaciones/consulta"); // Aquí solo verá sus citas
         } else {
           router.push("/aplicaciones");
         }

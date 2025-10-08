@@ -102,7 +102,7 @@ export default function Navbar() {
                 className="flex items-center gap-2 bg-white text-green-600 px-3 py-1.5 text-sm rounded-lg border-2 border-white transition-all duration-200 hover:bg-green-800 hover:text-white"
               >
                 <FaWpforms className="text-lg" />
-                Citas
+                Crear Citas
               </Link>
             </li>
            
