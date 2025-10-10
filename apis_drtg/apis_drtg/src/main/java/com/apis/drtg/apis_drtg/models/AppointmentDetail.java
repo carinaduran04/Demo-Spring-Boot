@@ -32,8 +32,7 @@ public class AppointmentDetail {
     @JoinColumn(name="USER_ID")
     private AppointmentUser userId;
 
-    
-    @ManyToOne
+    @ManyToOne(cascade = jakarta.persistence.CascadeType.ALL) // 👈 permite guardar la dirección nueva junto con la cita
     @JoinColumn(name="ADDRESS_ID")
     private AppointmentAddress appointmentAddress;
 
@@ -72,7 +71,5 @@ public class AppointmentDetail {
 
     @Column(name="LAST_UPDATE_DATE")
     private Date lastUpdateDate;
-
-    
 
 }
