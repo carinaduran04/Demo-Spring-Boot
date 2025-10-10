@@ -36,6 +36,8 @@ public class AppointmentDetailService {
     public List<AppointmentDetail> getActiveAppointments() {
         return repository.findByStatus("ACTIVO");
     }
+
+    
 }
 
 

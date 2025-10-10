@@ -13,7 +13,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.apis.drtg.apis_drtg.models.AppointmentDetail;
+import com.apis.drtg.apis_drtg.models.AppointmentDetailPage;
 import com.apis.drtg.apis_drtg.models.user.AppointmentUser;
+import com.apis.drtg.apis_drtg.services.AppointmentDetailPageService;
 import com.apis.drtg.apis_drtg.services.AppointmentDetailService;
 import com.apis.drtg.apis_drtg.services.AppointmentUserService;
 
@@ -24,6 +26,20 @@ import com.apis.drtg.apis_drtg.services.AppointmentUserService;
 @RequestMapping("/api")
 public class PostController {
 
+    // Start --> Appointment Detail Page
+    @Autowired
+    private AppointmentDetailPageService appointmentDetailPageService;
+
+    @PostMapping("/appointmentdetailpage/save")
+    public AppointmentDetailPage postAppointmentDetailPage(@RequestBody AppointmentDetailPage appointmentDetailPage){
+        return appointmentDetailPageService.AppointmentPage(appointmentDetailPage);
+    }
+    
+    
+
+    // End --> Appointment Detail Page
+
+    /////////////////////////////////////////////////
 
     // Start --> Appointment Detail
     @Autowired
