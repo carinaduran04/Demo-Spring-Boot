@@ -10,5 +10,7 @@ import com.apis.drtg.apis_drtg.models.AppointmentDetail;
 public interface AppointmentDetailRepository extends JpaRepository<AppointmentDetail, Integer>{
     
     List<AppointmentDetail> findByStatus(String status);
+   
 
 }
+

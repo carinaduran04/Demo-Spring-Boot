@@ -1,6 +1,6 @@
 package com.apis.drtg.apis_drtg.models;
 
-import java.util.Date; // 👈 para manejar fechas correctamente
+import java.util.Date; 
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -20,7 +20,7 @@ import lombok.NoArgsConstructor;
 public class AppointmentAddress {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) // 👈 para que se genere automáticamente
+    @GeneratedValue(strategy = GenerationType.IDENTITY) 
     @Column(name="ADDRESS_ID")
     private int addressId;
 
@@ -34,8 +34,8 @@ public class AppointmentAddress {
     private String createBy;
 
     @Column(name="CREATE_DATE")
-    private Date createDate; // 👈 cambiar String a Date
+    private Date createDate; 
 
     @Column(name="LAST_UPDATE_DATE")
-    private Date lastUpdateDate; // 👈 cambiar String a Date
+    private Date lastUpdateDate; 
 }

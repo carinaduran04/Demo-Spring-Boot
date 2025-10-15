@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import ScaleIn from "./scaleIn";
-import { useRouter , useParams } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
+import ModalAlert from "@/components/modalalert"; 
 
 interface PersonData {
   id?: number;
@@ -27,7 +28,7 @@ interface PersonData {
   doctorEmail?: string;
   mensaje?: string;
   especialidad?: string;
-    activo?: boolean; 
+  activo?: boolean;
 }
 
 interface Props {
@@ -35,16 +36,16 @@ interface Props {
 }
 
 export default function PersonForm({ data }: Props) {
-   const params = useParams();
+  const params = useParams();
   const idFromUrl = params?.id ? Number(params.id) : 0;
-    const router = useRouter();
-  const visibleTabs = [ "consulta"];
-  //"persona", "contactos", "doctor", "mensaje", "consulta"
+  const router = useRouter();
+  const visibleTabs = ["consulta"]; 
   const [activeTab, setActiveTab] = useState<string>(visibleTabs[0]);
   const [isEditing, setIsEditing] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false); 
+  
+  
   const [form, setForm] = useState<PersonData>({
     id: data?.id || idFromUrl || 0,
     nombre: data?.nombre || "",
@@ -57,9 +58,8 @@ export default function PersonForm({ data }: Props) {
     telefono: data?.telefono || "",
     celular: data?.celular || "",
     email: data?.email || "",
-    direccion: data?.direccion|| "",
+    direccion: data?.direccion || "",
     tipoConsulta: data?.tipoConsulta || "",
-
     fechaConsulta: data?.fechaConsulta || "",
     doctorNombre: data?.doctorNombre || "",
     doctorApellidos: data?.doctorApellidos || "",
@@ -69,12 +69,15 @@ export default function PersonForm({ data }: Props) {
     doctorEmail: data?.doctorEmail || "",
     mensaje: data?.mensaje || "",
     especialidad: data?.especialidad || "",
-     activo: data?.activo !== false,
+    activo: data?.activo !== false,
   });
 
   const [originalData, setOriginalData] = useState(form);
+  const [showModal, setShowModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
+  const [onOkAction, setOnOkAction] = useState<(() => void) | null>(null);
+  const [onCancelAction, setOnCancelAction] = useState<(() => void) | null>(null);
 
-  
   useEffect(() => {
     if (!isEditing) return;
     const isEqual = JSON.stringify(form) === JSON.stringify(originalData);
@@ -85,63 +88,170 @@ export default function PersonForm({ data }: Props) {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
-  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const showModalDialog = (
+    message: string,
+    onOkActionParam?: () => void,
+    onCancelActionParam?: () => void
+  ) => {
+    console.log("Mostrando modal:", message);
+    setModalMessage(message);
+    setOnOkAction(onOkActionParam || null);
+    setOnCancelAction(onCancelActionParam || null);
+    setShowModal(true);
+  };
+
+  const closeModal = () => {
+    console.log("Modal cerrado");
+    setShowModal(false);
+    setModalMessage("");
+    setOnOkAction(null);
+    setOnCancelAction(null);
+  };
+
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    alert("Datos guardados correctamente");
-    setOriginalData(form);
-    setIsEditing(false);
-    setHasChanges(false);
+
+    if (!form.id) {
+      showModalDialog("No se puede guardar: falta el ID del registro");
+      return;
+    }
+
+    const payload = {
+      firstName: (form.nombre || "").toUpperCase(),
+      lastName: (form.apellidos || "").toUpperCase(),
+      fullName: `${form.nombre || ""} ${form.apellidos || ""}`.toUpperCase().trim(),
+      phone: (form.telefono || "").toUpperCase(),
+      email: form.email || "",
+      consultingType: (form.tipoConsulta || "").toUpperCase(),
+      consultingDate: form.fechaConsulta ? new Date(form.fechaConsulta).toISOString() : null,
+      comment: (form.mensaje || "").toUpperCase(),
+      status: form.activo ? "ACTIVE" : "INACTIVO",
+      appointmentAddress: {
+        address: (form.direccion || "").toUpperCase(),
+        city: (form.ciudad || "").toUpperCase(),
+      },
+    };
+
+    try {
+      const response = await fetch(`/api/appointmentdetail/update/${form.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Error al guardar (${response.status}): ${errorText}`);
+      }
+
+      const savedData = await response.json();
+      console.log("Registro actualizado:", savedData);
+
+      showModalDialog("✅ Cambios guardados correctamente en la base de datos", () => {
+        setOriginalData(form);
+        setIsEditing(false);
+        setHasChanges(false);
+      });
+    } catch (error) {
+      console.error("Error al guardar:", error);
+      showModalDialog("Ocurrió un error al guardar los cambios");
+    }
   };
 
   const onCancel = () => {
-    setForm(originalData);
-    setIsEditing(false);
-    setHasChanges(false);
+    if (!hasChanges) {
+      setForm(originalData);
+      setIsEditing(false);
+      setHasChanges(false);
+      return;
+    }
+
+    showModalDialog(
+      "¿Seguro que deseas cancelar? Se perderán los cambios no guardados.",
+      () => {
+        setForm(originalData);
+        setIsEditing(false);
+        setHasChanges(false);
+      },
+      () => {
+      }
+    );
   };
 
-    // solo marca como inactivo
-
-  const handleDelete = async () => {
+  
+  const handleDelete = () => {
   const idToDelete = form.id || idFromUrl;
 
-  console.log("ID del registro a eliminar:", idToDelete);
-
   if (!idToDelete || idToDelete === 0) {
-    alert("⚠️ No se puede eliminar: falta el ID válido");
+    showModalDialog(" No se puede eliminar: falta el ID válido");
     return;
   }
 
-  const confirmacion = window.confirm("¿Seguro que deseas eliminar esta cita?");
-  if (!confirmacion) return;
+  showModalDialog(
+    "¿Estás seguro de que deseas eliminar esta cita?",
+    async () => {
+      try {
+        const respuesta = await fetch(`/api/appointmentdetail/delete/${idToDelete}`, {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
 
-  try {
-  const respuesta = await fetch(`/api/appointmentdetail/delete/${idToDelete}`, {
-  method: "DELETE",
-  headers: {
-    "Content-Type": "application/json",
-  },
-});
+        if (!respuesta.ok) {
+          throw new Error(`Error del servidor: ${respuesta.status}`);
+        }
 
-    if (!respuesta.ok) {
-      throw new Error(`Error del servidor: ${respuesta.status}`);
+        const mensaje = await respuesta.text();
+        console.log("Servidor:", mensaje);
+
+        setForm((prev) => ({
+          ...prev,
+          activo: false,
+        }));
+
+        showModalDialog("Cita eliminada correctamente", () => {
+          router.push("/aplicaciones/consulta");
+        });
+      } catch (error) {
+        console.error("Error al eliminar:", error);
+        showModalDialog("Ocurrió un error al eliminar la cita");
+      }
+    },
+    () => {
+      console.log("Eliminación cancelada por el usuario");
+    }
+  );
+};
+
+
+   const cancelDelete = () => {
+    setShowDeleteConfirm(false);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("user");
+    router.push("/aplicaciones/consulta");
+  };
+
+  const handleExit = () => {
+    if (!hasChanges) {
+      router.push("/aplicaciones/consulta");
+      return;
     }
 
-    const mensaje = await respuesta.text();
-    console.log("Servidor:", mensaje);
+    showModalDialog(
+      "¿Seguro que deseas salir? Se perderán los cambios no guardados.",
+      () => {
+        router.push("/aplicaciones/consulta");
+      },
+      () => {
+      }
+    );
+  };
 
-    setForm((prev) => ({
-      ...prev,
-      activo: false,
-    }));
-
-    alert(" Cita marcada como INACTIVA correctamente");
-
-    router.push("/aplicaciones/consulta");
-  } catch (error) {
-    console.error("Error al eliminar:", error);
-    alert("Ocurrió un error al eliminar la cita");
-  }
-};
+ 
+                   
 
   return (
     <ScaleIn>
@@ -163,8 +273,7 @@ export default function PersonForm({ data }: Props) {
           </button>
         ))}
       </div>
-   
-      <div className="flex justify-end gap-2 mb-4">
+          <div className="flex justify-end gap-2 mb-4">
             {!isEditing ? (
               <>
                 <button
@@ -174,34 +283,42 @@ export default function PersonForm({ data }: Props) {
                 >
                   Editar
                 </button>
-
+              
                 {!showDeleteConfirm ? (
                   <button
                     type="button"
                     className="bg-red-600 text-white px-4 py-2 text-sm rounded hover:bg-red-700"
-                    onClick={() => setShowDeleteConfirm(true)}
+                    onClick={handleDelete} 
                   >
                     Eliminar
                   </button>
-                ) : (
+
+                  ) : (
                   <>
                     <button
                       type="button"
                       className="bg-red-600 text-white px-4 py-2 text-sm rounded hover:bg-red-700"
-                      onClick={handleDelete}
+                      onClick={handleDelete} 
                     >
                       Confirmar eliminar
                     </button>
                     <button
                       type="button"
                       className="bg-gray-400 text-white px-4 py-2 text-sm rounded hover:bg-gray-500"
-                      onClick={() => setShowDeleteConfirm(false)}
+                      onClick={cancelDelete} 
                     >
                       Cancelar
                     </button>
                   </>
                 )}
 
+                <button
+                  type="button"
+                  className="bg-green-800 text-white px-4 py-2 text-sm rounded hover:bg-green-900"
+                  onClick={handleExit} 
+                >
+                  Salir
+                </button>
               </>
             ) : (
               <>
@@ -216,14 +333,16 @@ export default function PersonForm({ data }: Props) {
                 )}
                 <button
                   type="button"
-                  onClick={onCancel}
-                  className="bg-gray-400 text-white px-4 py-2 text-sm rounded hover:bg-gray-500"
+                  onClick={onCancel} 
+                  className="bg-red-600 text-white px-4 py-2 text-sm rounded hover:bg-red-700"
                 >
                   Cancelar
                 </button>
               </>
             )}
           </div>
+
+                
 
       <form
         id="personForm"
@@ -417,14 +536,14 @@ export default function PersonForm({ data }: Props) {
                 label="Nombre"
                 value={form.nombre}
                 readOnly={!isEditing}
-                className="col-span-2"
+                className="col-span-3"
                 onChange={(v) => handleChange("nombre", v)}
               />
               <InputField
                 label="Apellido"
                 value={form.apellidos}
                 readOnly={!isEditing}
-                className="col-span-3"
+                className="col-span-2"
                 onChange={(v) => handleChange("apellidos", v)}
               />
                <InputField
@@ -434,6 +553,14 @@ export default function PersonForm({ data }: Props) {
                 readOnly={!isEditing}
                 className="col-span-3"
                 onChange={(v) => handleChange("direccion", v)}
+              />
+               <InputField
+                label="Ciudad"
+                type="text"
+                value={form.ciudad}
+                readOnly={!isEditing}
+                className="col-span-3"
+                onChange={(v) => handleChange("ciudad", v)}
               />
               <InputField
                 label="Correo"
@@ -447,7 +574,7 @@ export default function PersonForm({ data }: Props) {
                 label="Teléfono"
                 value={form.telefono}
                 readOnly={!isEditing}
-                className="col-span-3"
+                className="col-span-2"
                 onChange={(v) => handleChange("telefono", v)}
               />
               <InputField
@@ -473,7 +600,7 @@ export default function PersonForm({ data }: Props) {
                     : ""
                 }
                 readOnly={!isEditing}
-                className="col-span-5"
+                className="col-span-3"
                 onChange={(v) => handleChange("fechaConsulta", v)}
               />
 
@@ -490,10 +617,17 @@ export default function PersonForm({ data }: Props) {
       </form>
     </div>
     </div> 
+
+      <ModalAlert
+        isOpen={showModal}
+        message={modalMessage}
+        onOk={onOkAction}
+        onCancel={onCancelAction}
+        onClose={closeModal}
+      />
     </ScaleIn>
   );
 }
-
           function InputField({
             label,
             value,

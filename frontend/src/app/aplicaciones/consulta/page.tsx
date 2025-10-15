@@ -57,38 +57,17 @@ interface SearchParams {
   accountNumber: string;
 }
 */
-
-// Interfaces nuevas de usuario y dirección
+// Interfaces simplificadas para este ejemplo
 interface AppointmentAddress {
   addressId: number;
   address: string;
   city: string;
-  createBy: string;
-  createDate: string;
-  lastUpdateDate: string;
-}
-
-interface AppointmentUserType {
-  userTypeId: number;
-  name: string;
 }
 
 interface Usuario {
   userId: number;
-  appointmentAddress: AppointmentAddress;
-  appointmentUserType: AppointmentUserType;
   userName: string;
-  password: string;
-  firstName: string;
-  lastName: string;
-  fullName: string;
-  role: string;
   email: string;
-  title: string;
-  lastSessionDate: string;
-  createBy: string;
-  createDate: string;
-  lastUpdateDate: string;
 }
 
 interface Appointment {
@@ -97,28 +76,18 @@ interface Appointment {
   appointmentAddress: AppointmentAddress;
   firstName: string;
   lastName: string;
-  fullName: string;
   phone: string;
   email: string;
-  consultingDate: string;
   consultingType: string;
-  comment: string;
   status: string;
-  createBy: string;
-  createdDate: string;
-  lastUpdateDate: string;
 }
 
 interface SearchParams {
   firstName: string;
   lastName: string;
-  cedula: string;
+  direccion: string;
   email: string;
   phone: string;
-  direccion: string;
-  celular: string;
-  ciudad: string;
-  accountNumber: string;
 }
 
 export default function SolicitudPrestamo() {
@@ -126,83 +95,103 @@ export default function SolicitudPrestamo() {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showActive, setShowActive] = useState(true);
+  const [showInactive, setShowInactive] = useState(false);
+  const [currentUser, setCurrentUser] = useState<any>(null);
   const [searchParams, setSearchParams] = useState<SearchParams>({
     firstName: "",
     lastName: "",
-    cedula: "",
+    direccion: "",
     email: "",
     phone: "",
-    celular: "",
-    ciudad: "",
-    accountNumber: "",
-    direccion: "",
   });
-  // Obtener el usuario logueado desde localStorage
-  const storedUser = typeof window !== "undefined" ? localStorage.getItem("user") : null;
-  const currentUser = storedUser ? JSON.parse(storedUser) : null;
 
+  // Cargar usuario solo en cliente
   useEffect(() => {
+    if (typeof window !== "undefined") {
+      const storedUser = localStorage.getItem("user");
+      if (storedUser) {
+        try {
+          setCurrentUser(JSON.parse(storedUser));
+        } catch (e) {
+          console.error("Error parsing user:", e);
+        }
+      }
+    }
+  }, []);
+
+  const isAdmin = currentUser?.id === 1;
+
+  // Cargar citas desde API
+  useEffect(() => {
+    let cancelled = false;
+
     async function fetchAllAppointments() {
       try {
         const response = await fetch("/api/appointmentdetail/all");
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const data: Appointment[] = await response.json();
 
-        console.log("Datos crudos de la API:", data);
+        let filteredData = data;
 
-        // Filtrar solo registros ACTIVE
-        const activos = data.filter(
-          (appointment) => appointment.status.toLowerCase() === "active"
-        );
+        // Si no es admin, solo mostrar activos
+        if (!isAdmin) {
+          filteredData = data.filter(a => a.status?.toLowerCase() === "active");
+        }
 
         const userAppointments = currentUser
-          ? activos.filter(
-              (appointment) =>
-                appointment.userId?.userName.toLowerCase() === currentUser.name.toLowerCase()
-            )
-          : activos;
+          ? filteredData.filter(a => currentUser.id === 1 || a.userId?.userId === currentUser.id)
+          : filteredData;
 
-        setAllAppointments(userAppointments);
-        setAppointments(userAppointments);
+        if (!cancelled) {
+          setAllAppointments(userAppointments);
+          setAppointments(userAppointments);
+        }
       } catch (e: unknown) {
         if (e instanceof Error) setError(e.message);
         else setError("An unknown error occurred.");
       } finally {
-        setIsLoading(false);
+        if (!cancelled) setIsLoading(false);
       }
     }
 
     fetchAllAppointments();
+
+    return () => { cancelled = true; };
   }, [currentUser]);
 
+  // Filtrar según checkboxes (solo admin)
+  useEffect(() => {
+    if (!isAdmin) return;
+
+    const filtered = allAppointments.filter(a => {
+      const status = a.status?.toLowerCase();
+      if (showActive && status === "active") return true;
+      if (showInactive && status !== "active") return true;
+      return false;
+    });
+
+    setAppointments(filtered);
+  }, [showActive, showInactive, allAppointments, isAdmin]);
+
+  // Filtros de búsqueda
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setSearchParams((prev) => ({ ...prev, [name]: value }));
+    setSearchParams(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    const filteredAppointments = allAppointments.filter((appointment) => {
-      const firstNameMatch =
-        searchParams.firstName === "" ||
-        appointment.firstName.toLowerCase().includes(searchParams.firstName.toLowerCase());
-      const lastNameMatch =
-        searchParams.lastName === "" ||
-        appointment.lastName.toLowerCase().includes(searchParams.lastName.toLowerCase());
-      const emailMatch =
-        searchParams.email === "" ||
-        appointment.email.toLowerCase().includes(searchParams.email.toLowerCase());
-      const phoneMatch =
-        searchParams.phone === "" ||
-        appointment.phone.toLowerCase().includes(searchParams.phone.toLowerCase());
-      const direccionMatch =
-        searchParams.direccion === "" ||
-        appointment.appointmentAddress?.address
-          .toLowerCase()
-          .includes(searchParams.direccion.toLowerCase());
+    const filteredAppointments = allAppointments.filter(a => {
+      const matches = 
+        (!searchParams.firstName || a.firstName.toLowerCase().includes(searchParams.firstName.toLowerCase())) &&
+        (!searchParams.lastName || a.lastName.toLowerCase().includes(searchParams.lastName.toLowerCase())) &&
+        (!searchParams.email || a.email.toLowerCase().includes(searchParams.email.toLowerCase())) &&
+        (!searchParams.phone || a.phone.toLowerCase().includes(searchParams.phone.toLowerCase())) &&
+        (!searchParams.direccion || a.appointmentAddress?.address.toLowerCase().includes(searchParams.direccion.toLowerCase()));
 
-      return firstNameMatch && lastNameMatch && emailMatch && phoneMatch && direccionMatch;
+      return matches;
     });
 
     setAppointments(filteredAppointments);
@@ -210,155 +199,131 @@ export default function SolicitudPrestamo() {
 
   return (
     <ScaleIn>
-      <div className="flex justify-center py-1 pt-14">
-        <form
-          onSubmit={handleSearch}
-          className="bg-gray-100 border border-green-600 p-4 rounded-xl shadow-md w-full max-w-7xl flex flex-col min-h-[70vh]"
-        >
-          <h2 className="text-4xl text-green-700 font-semibold text-center mb-4">Haz tu consulta</h2>
+      <div className="flex justify-center py-1 pt-16  px-50">
+        <form onSubmit={handleSearch} className="bg-gray-100 border border-green-600 p-6 rounded-xl shadow-md w-full max-w-8xl flex flex-col min-h-[70vh]">
+          <h2 className="text-4xl text-green-700 font-semibold text-center mb-4">HAZ TU CONSULTA</h2>
 
-       <div className="col-span-12 flex justify-end gap-2 pt-2">
-          <button
-            type="submit"
-            className="bg-green-600 text-white px-3 py-1.5 text-3x1 rounded hover:bg-green-700"
-          >
-            Buscar
-          </button>
+          <div className="col-span-12 flex flex-col items-end pt-2">
+            <button type="submit" className="bg-green-600 text-white px-4 py-2 text-3x1 rounded hover:bg-green-700 transition">
+              Buscar
+            </button>
 
-          <Link
-            href="/aplicaciones/haz_consulta"
-            className="bg-green-600 text-white px-3 py-1.5 text-3x1 rounded hover:bg-green-700 flex items-center justify-center"
-          >
-            Citas
-          </Link>
-        </div>
+            {isAdmin && (
+              <div className="flex flex-row gap-6 mt-3">
+                <div className="flex items-center gap-2">
+                  <input
+                    id="showActive"
+                    type="checkbox"
+                    checked={showActive}
+                    onChange={() => setShowActive(!showActive)}
+                    className="w-4 h-4 text-green-600 border-green-500 rounded focus:ring-green-500"
+                  />
+                  <label htmlFor="showActive" className="text-green-700 font-semibold">Activos</label>
+                </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    id="showInactive"
+                    type="checkbox"
+                    checked={showInactive}
+                    onChange={() => setShowInactive(!showInactive)}
+                    className="w-4 h-4 text-green-600 border-green-500 rounded focus:ring-green-500"
+                  />
+                  <label htmlFor="showInactive" className="text-green-700 font-semibold">Inactivos</label>
+                </div>
+              </div>
+            )}
+          </div>
 
-          <div className="mt-6"></div>
-          <div className="flex flex-row flex-wrap gap-4 mb-6">
+          <div className="mt-6 flex flex-row flex-wrap gap-4 mb-6">
             <div className="flex-1 min-w-[200px]">
               <label className="block text-base text-green-700 font-bold mb-1">Nombre</label>
-              <input
-                type="text"
-                name="firstName"
-                value={searchParams.firstName}
-                onChange={handleChange}
-                placeholder="Ingrese el nombre"
-                className="w-full border border-green-600 rounded p-2 text-2x1 focus:outline-none focus:ring-1 focus:ring-blue-500"
-              />
+              <input type="text" name="firstName" value={searchParams.firstName} onChange={handleChange}
+                placeholder="Ingrese el nombre" className="w-full border border-green-600 rounded p-2 text-2x1 focus:outline-none focus:ring-1 focus:ring-blue-500"/>
             </div>
 
             <div className="flex-1 min-w-[200px]">
               <label className="block text-base text-green-700 font-bold mb-1">Apellido</label>
-              <input
-                type="text"
-                name="lastName"
-                value={searchParams.lastName}
-                onChange={handleChange}
-                placeholder="Ingrese el apellido"
-                className="w-full border border-green-600 rounded p-2 text-2x1 focus:outline-none focus:ring-1 focus:ring-blue-500"
-              />
+              <input type="text" name="lastName" value={searchParams.lastName} onChange={handleChange}
+                placeholder="Ingrese el apellido" className="w-full border border-green-600 rounded p-2 text-2x1 focus:outline-none focus:ring-1 focus:ring-blue-500"/>
             </div>
 
             <div className="flex-1 min-w-[200px]">
               <label className="block text-base text-green-700 font-bold mb-1">Dirección</label>
-              <input
-                type="text"
-                name="direccion"
-                value={searchParams.direccion}
-                onChange={handleChange}
-                placeholder="Ingrese la dirección"
-                className="w-full border border-green-600 rounded p-2 text-2x1 focus:outline-none focus:ring-1 focus:ring-blue-500"
-              />
+              <input type="text" name="direccion" value={searchParams.direccion} onChange={handleChange}
+                placeholder="Ingrese la dirección" className="w-full border border-green-600 rounded p-2 text-2x1 focus:outline-none focus:ring-1 focus:ring-blue-500"/>
             </div>
 
             <div className="flex-1 min-w-[200px]">
               <label className="block text-base text-green-700 font-bold mb-1">E-Mail</label>
-              <input
-                type="text"
-                name="email"
-                value={searchParams.email}
-                onChange={handleChange}
-                placeholder="Ingrese el E-Mail"
-                className="w-full border border-green-600 rounded p-2 text-2x1 focus:outline-none focus:ring-1 focus:ring-blue-500"
-              />
+              <input type="text" name="email" value={searchParams.email} onChange={handleChange}
+                placeholder="Ingrese el E-Mail" className="w-full border border-green-600 rounded p-2 text-2x1 focus:outline-none focus:ring-1 focus:ring-blue-500"/>
             </div>
 
             <div className="flex-1 min-w-[200px]">
               <label className="block text-base text-green-700 font-bold mb-1">Teléfono</label>
-              <input
-                type="text"
-                name="phone"
-                value={searchParams.phone}
-                onChange={handleChange}
-                placeholder="Ingrese el teléfono"
-                className="w-full border border-green-600 rounded p-2 text-2x1 focus:outline-none focus:ring-1 focus:ring-blue-500"
-              />
+              <input type="text" name="phone" value={searchParams.phone} onChange={handleChange}
+                placeholder="Ingrese el teléfono" className="w-full border border-green-600 rounded p-2 text-2x1 focus:outline-none focus:ring-1 focus:ring-blue-500"/>
             </div>
           </div>
 
-          <div className="mt-1">
-            <div className="mt-4 overflow-x-auto">
-              <table className="min-w-full border border-green-500 rounded-lg shadow-md">
-                <thead className="bg-green-600 text-white">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-sm font-semibold uppercase tracking-wide">Nombre</th>
-                    <th className="px-6 py-3 text-left text-sm font-semibold uppercase tracking-wide">Apellido</th>
-                    <th className="px-6 py-3 text-left text-sm font-semibold uppercase tracking-wide">Dirección</th>
-                    <th className="px-6 py-3 text-left text-sm font-semibold uppercase tracking-wide">E-Mail</th>
-                    <th className="px-6 py-3 text-left text-sm font-semibold uppercase tracking-wide">Teléfono</th>
-                    <th className="px-6 py-3 text-left text-sm font-semibold uppercase tracking-wide">Usuario</th>
-                    <th className="px-6 py-3 text-left text-sm font-semibold uppercase tracking-wide">Correo Usuario</th>
-                    <th className="px-6 py-3 text-center text-sm font-semibold uppercase tracking-wide">Acción</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-green-500">
-                  {isLoading ? (
-                    <tr>
-                      <td colSpan={8} className="text-center py-4 text-gray-500 italic">
-                        Cargando registros...
-                      </td>
-                    </tr>
-                  ) : error ? (
-                    <tr>
-                      <td colSpan={8} className="text-center py-4 text-red-500 font-bold">
-                        Error al cargar los datos: {error}
-                      </td>
-                    </tr>
-                  ) : appointments.length > 0 ? (
-                    appointments.map((appointment) => (
-                      <tr
-                        key={appointment.appointmentDtlId}
-                        className="hover:bg-gray-300 hover:text-green-800 cursor-pointer transition-colors"
-                      >
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">{appointment.firstName}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">{appointment.lastName}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">{appointment.appointmentAddress?.address}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">{appointment.email}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">{appointment.phone}</td>
-
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">{appointment.userId?.userName}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">{appointment.userId?.email}</td>
-
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
-                          <Link
-                            href={`/aplicaciones/persona/${appointment.appointmentDtlId}`}
-                            className="bg-green-600 text-white px-3 py-1 rounded-md text-sm shadow-md hover:bg-green-700 transition"
-                          >
-                            Ver más
-                          </Link>
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={8} className="text-center py-4 text-gray-500 italic">
-                        No hay registros disponibles
-                      </td>
-                    </tr>
+          {/* Tabla */}
+          <div className="mt-4 overflow-x-auto">
+            <table className="min-w-[900px] w-full border border-green-500 rounded-lg shadow-md">
+              <thead className="bg-green-600 text-white">
+                <tr>
+                  <th className="px-6 py-3 text-left text-sm font-semibold uppercase">Nombre</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold uppercase">Apellido</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold uppercase">Dirección</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold uppercase">E-Mail</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold uppercase">Teléfono</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold uppercase">Tipo de consulta</th>
+                  {isAdmin && (
+                    <>
+                      <th className="px-6 py-3 text-left text-sm font-semibold uppercase">Usuario</th>
+                      <th className="px-6 py-3 text-left text-sm font-semibold uppercase">Correo Usuario</th>
+                    </>
                   )}
-                </tbody>
-              </table>
-            </div>
+                  <th className="px-6 py-3 text-center text-sm font-semibold uppercase">Acción</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-green-500">
+                {isLoading ? (
+                  <tr>
+                    <td colSpan={isAdmin ? 8 : 6} className="text-center py-4 text-gray-500 italic">Cargando registros...</td>
+                  </tr>
+                ) : error ? (
+                  <tr>
+                    <td colSpan={isAdmin ? 8 : 6} className="text-center py-4 text-red-500 font-bold">Error al cargar los datos: {error}</td>
+                  </tr>
+                ) : appointments.length > 0 ? (
+                  appointments.map(a => (
+                    <tr key={a.appointmentDtlId} className="hover:bg-gray-300 hover:text-green-800 cursor-pointer transition-colors">
+                      <td className="px-6 py-4 text-sm text-gray-800">{a.firstName}</td>
+                      <td className="px-6 py-4 text-sm text-gray-800">{a.lastName}</td>
+                      <td className="px-6 py-4 text-sm text-gray-800">{a.appointmentAddress?.address}</td>
+                      <td className="px-6 py-4 text-sm text-gray-800">{a.email}</td>
+                      <td className="px-6 py-4 text-sm text-gray-800">{a.phone}</td>
+                      <td className="px-6 py-4 text-sm text-gray-800">{a.consultingType}</td>
+                      {isAdmin && (
+                        <>
+                          <td className="px-6 py-4 text-sm text-gray-800">{a.userId?.userName}</td>
+                          <td className="px-6 py-4 text-sm text-gray-800">{a.userId?.email}</td>
+                        </>
+                      )}
+                      <td className="px-4 py-4 text-center w-[120px]">
+                        <Link href={`/aplicaciones/persona/${a.appointmentDtlId}`} className="bg-green-600 text-white px-2 py-1 rounded-md text-sm shadow-md hover:bg-green-700 transition inline-block">
+                          Ver más
+                        </Link>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={isAdmin ? 8 : 6} className="text-center py-4 text-gray-500 italic">No hay registros disponibles</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
           </div>
         </form>
       </div>

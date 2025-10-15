@@ -23,60 +23,63 @@ export default function Login() {
   const router = useRouter();
 
   const handleLogin = async () => {
-    try {
-      const res = await fetch("/api/appointmentuser/all");
-      const raw = await res.json();
-      console.log("📌 Respuesta de la API:", raw);
+  try {
+    const res = await fetch("/api/appointmentuser/all");
+    const raw = await res.json();
+    console.log("Respuesta de la API:", raw);
 
-      const data: User[] = Array.isArray(raw)
-        ? raw
-        : raw.users || raw.content || [];
+    const data: User[] = Array.isArray(raw)
+      ? raw
+      : raw.users || raw.content || [];
 
-      if (!Array.isArray(data)) {
-        setError("La API no devolvió usuarios en formato válido");
-        return;
-      }
+    if (!Array.isArray(data)) {
+      setError("La API no devolvió usuarios en formato válido");
+      return;
+    }
 
-      const mappedUsers = data.map((u: User) => ({
-        id: u.userId,
-        name: u.userName.trim().toLowerCase(),
-        pass: u.password.trim(),
-        fullName: u.fullName ?? u.userName,
-      }));
+    const mappedUsers = data.map((u: User) => ({
+      id: u.userId,
+      name: u.userName.trim().toLowerCase(),
+      pass: u.password.trim(),
+      fullName: u.fullName ?? u.userName,
+      role: u.userId === 1 ? "admin" : "user",
+    }));
 
-      const validUser = mappedUsers.find(
-        (u) => u.name === user.trim().toLowerCase() && u.pass === pass.trim()
+    const validUser = mappedUsers.find(
+      (u) => u.name === user.trim().toLowerCase() && u.pass === pass.trim()
+    );
+
+    if (validUser) {
+      console.log("Usuario logueado:", validUser);
+
+      localStorage.setItem(
+        "user",
+        JSON.stringify({
+          id: validUser.id,
+          name: validUser.name,
+          fullName: validUser.fullName
+        })
       );
 
-       if (validUser) {
-        console.log("Usuario logueado:", validUser);
+      const expires = new Date();
+      expires.setHours(expires.getHours() + 1);
+      document.cookie = `user=${validUser.name}; path=/; expires=${expires.toUTCString()}`;
 
-        // Guardar solo lo necesario en localStorage
-        localStorage.setItem(
-          "user",
-          JSON.stringify({
-            id: validUser.id,
-            name: validUser.name,
-            fullName: validUser.fullName
-          })
-        );
-
-        // Redirección según el usuario
-        if (validUser.id === 1) {
-          router.push("/aplicaciones/inicio");
-        } else if (validUser.id === 2 || validUser.id === 3) {
-          router.push("/aplicaciones/consulta"); // Aquí solo verá sus citas
-        } else {
-          router.push("/aplicaciones");
-        }
+      // Redirigir según tipo de usuario
+      if (validUser.id === 1) {
+        router.push("/aplicaciones/inicio"); // Admin
       } else {
-        setError("Usuario o contraseña incorrectos");
+        router.push("/aplicaciones/consulta"); // Usuarios normales
       }
-    } catch (err) {
-      setError("Error al conectar con la API");
-      console.error(err);
+
+    } else {
+      setError("Usuario o contraseña incorrectos");
     }
-  };
+  } catch (err) {
+    setError("Error al conectar con la API");
+    console.error(err);
+  }
+};
 
   return (
     <div className="relative bg-white flex flex-col  items-center min-h-screen">
@@ -131,8 +134,6 @@ export default function Login() {
   </div>
 </div>
 
-
-        
         <div className="bg-gray-200 shadow-md rounded-md w-[330px] max-h-[89vh] p-8 flex flex-col justify-between overflow-hidden ">
           <div className="flex justify-center px-4  ">
             <Image src="/logo15.png" alt="Logo" width={80} height={80} className="w-2/4" />
@@ -188,11 +189,12 @@ export default function Login() {
 
     <hr className="border-gray-400 my-2 mt-3" />
         <div className="flex flex-col gap-2 text-center mt-2">
-          <Link href="/aplicaciones/clave" className="text-black hover:underline cursor-pointer">
+          
+          <Link href="/login/clave" className="text-black hover:underline cursor-pointer">
             Olvidé mi Clave
           </Link>
 
-          <Link href="/aplicaciones/contrasena" className="text-black hover:underline cursor-pointer">
+          <Link href="/login/contrasena" className="text-black hover:underline cursor-pointer">
             Cambiar mi Contraseña
           </Link>
         </div>

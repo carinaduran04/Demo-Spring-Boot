@@ -1,12 +1,21 @@
-import { NextResponse } from 'next/server';
-import  { NextRequest } from 'next/server';
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
-export default function middleware (request : NextRequest) {
+export function middleware(req: NextRequest) {
+  const { pathname } = req.nextUrl;
 
-    return NextResponse.redirect(new URL('/login', request.url));
-  
+  // Solo proteger rutas que empiezan con /aplicaciones
+  if (pathname.startsWith("/aplicaciones")) {
+    const token = req.cookies.get("user")?.value;
+
+    if (!token) {
+      return NextResponse.redirect(new URL("/login", req.url));
+    }
+  }
+
+  return NextResponse.next();
 }
 
-export const config ={
-  matcher:['/'],
-}
+export const config = {
+  matcher: ["/aplicaciones/:path*"],
+};

@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -60,19 +61,27 @@ public class PostController {
         return appointmentDetailService.saveAppointment(appointmentDetail);
     }
    
+
+    
       // End --> Appointment Detail
     @DeleteMapping("/appointmentdetail/delete/{id}")
     public String deleteAppointmentDetail(@PathVariable int id){
         appointmentDetailService.softDeleteAppointment(id);
         return "Cita marcada como INACTIVO correctamente";
     }
+  
+    @PutMapping("/appointmentdetail/update/{id}")
+    public AppointmentDetail updateAppointmentDetail(@PathVariable int id, @RequestBody AppointmentDetail updatedDetail) {
+    return appointmentDetailService.updateAppointment(id, updatedDetail);
+}
 
    
     @GetMapping("/appointmentdetail/active")
     public List<AppointmentDetail> getActiveAppointments() {
         return appointmentDetailService.getActiveAppointments();
     }
-    
+
+
     // Start --> Appointment User
     @Autowired
     private AppointmentUserService appointmentUserService;
@@ -89,6 +98,8 @@ public class PostController {
     // End --> Appointment User
     
     
-    
-    
+
+
 }
+   
+    

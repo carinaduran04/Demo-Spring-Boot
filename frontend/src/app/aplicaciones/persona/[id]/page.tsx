@@ -6,6 +6,7 @@ import PersonForm from '@/components/persona';
 
 
 interface PersonData {
+  id?: number; 
   nombre?: string;
   apellidos?: string;
   cedula?: string;
@@ -29,7 +30,7 @@ interface PersonData {
 
   // mensaje
   mensaje?: string;
-
+ activo?: boolean;
  
   // consulta
  
@@ -54,6 +55,7 @@ export default function PersonaDetalle() {
 
         if (persona) {
           setData({
+            id: Number(id),
             nombre: persona.firstName,
             apellidos: persona.lastName,
             cedula: persona.cedula || '',
@@ -75,6 +77,7 @@ export default function PersonaDetalle() {
             especialidad: persona.userId?.appointmentUserType?.name || '',
 
             mensaje: persona.comment || '',
+             activo: persona.status === "ACTIVE",
           });
         } else {
           setData(null);
@@ -87,15 +90,14 @@ export default function PersonaDetalle() {
       }
     }
 
-    fetchPerson();
+     fetchPerson();
   }, [id]);
-{console.log(data)}
+  console.log(data); 
   if (loading) return <div className="mt-20 p-4 text-center">Cargando...</div>;
   if (error) return <div className="mt-20 p-4 text-center text-red-500">{error}</div>;
-  if (!data) return  <div className="mt-20 p-4 text-center">No se encontró la persona </div>;
-
+  if (!data) return <div className="mt-20 p-4 text-center">No se encontró la persona</div>;
   return (
-    <div className="10 p-4">
+    <div className="10 p-4"> 
       <PersonForm data={data} />
     </div>
   );
