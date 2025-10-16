@@ -120,7 +120,8 @@ export default function SolicitudPrestamo() {
     }
   }, []);
 
-  const isAdmin = currentUser?.id === 1;
+  const adminIds = [1, 6, 7, 8];
+  const isAdmin = adminIds.includes(currentUser?.id);
 
   // Cargar citas desde API
   useEffect(() => {
@@ -139,8 +140,11 @@ export default function SolicitudPrestamo() {
           filteredData = data.filter(a => a.status?.toLowerCase() === "active");
         }
 
+        const adminIds = [1, 6, 7, 8];
         const userAppointments = currentUser
-          ? filteredData.filter(a => currentUser.id === 1 || a.userId?.userId === currentUser.id)
+          ? filteredData.filter(
+              (a) => adminIds.includes(currentUser.id) || a.userId?.userId === currentUser.id
+            )
           : filteredData;
 
         if (!cancelled) {

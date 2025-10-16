@@ -37,12 +37,15 @@ export default function Login() {
       return;
     }
 
+    // IDs de administradores
+    const adminIds = [1, 6, 7, 8];
+
     const mappedUsers = data.map((u: User) => ({
       id: u.userId,
       name: u.userName.trim().toLowerCase(),
       pass: u.password.trim(),
       fullName: u.fullName ?? u.userName,
-      role: u.userId === 1 ? "admin" : "user",
+      role: adminIds.includes(u.userId) ? "admin" : "user",
     }));
 
     const validUser = mappedUsers.find(
@@ -57,7 +60,8 @@ export default function Login() {
         JSON.stringify({
           id: validUser.id,
           name: validUser.name,
-          fullName: validUser.fullName
+          fullName: validUser.fullName,
+          role: validUser.role,
         })
       );
 
@@ -66,10 +70,11 @@ export default function Login() {
       document.cookie = `user=${validUser.name}; path=/; expires=${expires.toUTCString()}`;
 
       // Redirigir según tipo de usuario
-      if (validUser.id === 1) {
+      
+      if (validUser.role === "admin") {
         router.push("/aplicaciones/inicio"); // Admin
       } else {
-        router.push("/aplicaciones/consulta"); // Usuarios normales
+        router.push("/aplicaciones/consulta"); // Usuario normal
       }
 
     } else {
