@@ -77,6 +77,23 @@ export default function PersonForm({ data }: Props) {
   const [modalMessage, setModalMessage] = useState("");
   const [onOkAction, setOnOkAction] = useState<(() => void) | null>(null);
   const [onCancelAction, setOnCancelAction] = useState<(() => void) | null>(null);
+  const [user, setUser] = useState<{ username?: string;  role?: string } | null>(null);
+
+
+  useEffect(() => {
+    const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
+    if (storedUser && storedUser.username) {
+      setUser(storedUser);
+      console.log("Usuario cargado:", storedUser);
+    }
+  }, []);
+ const isAdmin = user?.role === "admin";
+{/*
+  const adminUsers = ["1", "6", "7", "8"];  
+  const isAdmin = adminUsers.includes(user?.username?.toLowerCase() || ""); 
+  console.log("isAdmin:", isAdmin);
+*/}
+
 
   useEffect(() => {
     if (!isEditing) return;
@@ -84,30 +101,27 @@ export default function PersonForm({ data }: Props) {
     setHasChanges(!isEqual);
   }, [form, originalData, isEditing]);
 
-  const handleChange = (field: keyof PersonData, value: string) => {
+  const handleChange = (field: keyof PersonData, value: string | boolean) => {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
-  const showModalDialog = (
+const showModalDialog = (
     message: string,
-    onOkActionParam?: () => void,
-    onCancelActionParam?: () => void
+    onOkActionParam?: () => void | Promise<void>,
+    onCancelActionParam?: () => void | Promise<void>
   ) => {
-    console.log("Mostrando modal:", message);
     setModalMessage(message);
-    setOnOkAction(onOkActionParam || null);
-    setOnCancelAction(onCancelActionParam || null);
+    setOnOkAction(() => onOkActionParam || null); 
+    setOnCancelAction(() => onCancelActionParam || null);
     setShowModal(true);
   };
 
   const closeModal = () => {
-    console.log("Modal cerrado");
     setShowModal(false);
     setModalMessage("");
     setOnOkAction(null);
     setOnCancelAction(null);
   };
-
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -144,10 +158,10 @@ export default function PersonForm({ data }: Props) {
         throw new Error(`Error al guardar (${response.status}): ${errorText}`);
       }
 
-      const savedData = await response.json();
+     const savedData = await response.json();
       console.log("Registro actualizado:", savedData);
 
-      showModalDialog("✅ Cambios guardados correctamente en la base de datos", () => {
+      showModalDialog("Cambios guardados correctamente en la base de datos", () => {
         setOriginalData(form);
         setIsEditing(false);
         setHasChanges(false);
@@ -158,7 +172,7 @@ export default function PersonForm({ data }: Props) {
     }
   };
 
-  const onCancel = () => {
+    const onCancel = () => {
     if (!hasChanges) {
       setForm(originalData);
       setIsEditing(false);
@@ -172,183 +186,156 @@ export default function PersonForm({ data }: Props) {
         setForm(originalData);
         setIsEditing(false);
         setHasChanges(false);
-      },
-      () => {
       }
     );
   };
 
   
-  const handleDelete = () => {
-  const idToDelete = form.id || idFromUrl;
-
-  if (!idToDelete || idToDelete === 0) {
-    showModalDialog(" No se puede eliminar: falta el ID válido");
-    return;
-  }
-
-  showModalDialog(
-    "¿Estás seguro de que deseas eliminar esta cita?",
-    async () => {
-      try {
-        const respuesta = await fetch(`/api/appointmentdetail/delete/${idToDelete}`, {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-
-        if (!respuesta.ok) {
-          throw new Error(`Error del servidor: ${respuesta.status}`);
-        }
-
-        const mensaje = await respuesta.text();
-        console.log("Servidor:", mensaje);
-
-        setForm((prev) => ({
-          ...prev,
-          activo: false,
-        }));
-
-        showModalDialog("Cita eliminada correctamente", () => {
-          router.push("/aplicaciones/consulta");
-        });
-      } catch (error) {
-        console.error("Error al eliminar:", error);
-        showModalDialog("Ocurrió un error al eliminar la cita");
-      }
-    },
-    () => {
-      console.log("Eliminación cancelada por el usuario");
+   const handleDelete = () => {
+    const idToDelete = form.id || idFromUrl;
+    if (!idToDelete || idToDelete === 0) {
+      showModalDialog("No se puede eliminar: falta el ID válido");
+      return;
     }
-  );
-};
 
+ showModalDialog(
+      "¿Estás seguro de que deseas eliminar esta cita?",
+      async () => {
+        try {
+          const response = await fetch(`/api/appointmentdetail/delete/${idToDelete}`, {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+          });
+          if (!response.ok) {
+            throw new Error(`Error del servidor: ${response.status}`);
+          }
 
-   const cancelDelete = () => {
-    setShowDeleteConfirm(false);
+           console.log("Cita eliminada correctamente");
+           
+            router.push("/aplicaciones/consulta");
+          } catch (error) {
+            console.error("Error al eliminar:", error);
+            closeModal();
+            showModalDialog("Ocurrió un error al eliminar la cita");
+          }
+      },
+      () => {
+       console.log("Eliminación cancelada"); 
+        closeModal();
+      }
+    );
   };
-
-  const handleLogout = () => {
-    localStorage.removeItem("user");
-    router.push("/aplicaciones/consulta");
-  };
-
   const handleExit = () => {
     if (!hasChanges) {
       router.push("/aplicaciones/consulta");
       return;
     }
-
     showModalDialog(
       "¿Seguro que deseas salir? Se perderán los cambios no guardados.",
       () => {
         router.push("/aplicaciones/consulta");
-      },
-      () => {
       }
     );
   };
 
  
-                   
-
   return (
     <ScaleIn>
      <div className=" my-auto">
       <div className="max-w-6xl mx-auto p-6 bg-gray-100 border-2 border-green-600 rounded-xl shadow m-10">
       <div className="flex gap-6 border-b pb-2 mb-2 text-lg font-bold text-gray-700">
         {visibleTabs.map((tab) => (
-          <button
-            key={tab}
-            type="button"
-            onClick={() => setActiveTab(tab)}
-            className={`pb-0 ${
-              activeTab === tab
-               ? "text-green-700 "
-                : "text-gray-500 hover:text-green-600"
-            }`}
-          >
-            {tab.charAt(0).toUpperCase() + tab.slice(1)}
-          </button>
-        ))}
-      </div>
-          <div className="flex justify-end gap-2 mb-4">
-            {!isEditing ? (
-              <>
-                <button
-                  type="button"
-                  className="bg-green-600 text-white px-4 py-2 text-sm rounded hover:bg-green-700"
-                  onClick={() => setIsEditing(true)}
-                >
-                  Editar
-                </button>
-              
-                {!showDeleteConfirm ? (
-                  <button
-                    type="button"
-                    className="bg-red-600 text-white px-4 py-2 text-sm rounded hover:bg-red-700"
-                    onClick={handleDelete} 
-                  >
-                    Eliminar
-                  </button>
+              <button
+                key={tab}
+                type="button"
+                onClick={() => setActiveTab(tab)}
+                className={`pb-0 ${
+                  activeTab === tab ? "text-green-700" : "text-gray-500 hover:text-green-600"
+                }`}
+              >
+                {tab.charAt(0).toUpperCase() + tab.slice(1)}
+              </button>
+            ))}
+          </div>
 
-                  ) : (
+         <div className="flex justify-between items-center mb-4">
+          {isAdmin && (
+              <div className="flex items-center gap-3">
+                <span
+                  className={`px-3 py-1 text-sm font-bold rounded-full ${
+                    form.activo
+                      ? "bg-green-100 text-green-700 border border-green-600"
+                      : "bg-red-100 text-red-700 border border-red-600"
+                  }`}
+                >
+                  {form.activo ? "ACTIVO" : "INACTIVO"}
+                </span>
+                  {isEditing && (
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={form.activo}
+                      onChange={(e) => handleChange("activo", e.target.checked)}
+                      className="w-4 h-4 text-green-600 border-green-500 rounded focus:ring-green-500"
+                    />
+                    <label className="text-green-700 font-semibold">
+                      {form.activo ? "Activo" : "Inactivo"}
+                    </label>
+                  </div>
+                )}
+              </div>
+            )}
+
+              <div className="flex gap-2 justify-end">
+                {!isEditing ? (
                   <>
                     <button
                       type="button"
-                      className="bg-red-600 text-white px-4 py-2 text-sm rounded hover:bg-red-700"
-                      onClick={handleDelete} 
+                      className="bg-green-600 text-white px-4 py-2 text-sm rounded hover:bg-green-700"
+                      onClick={() => setIsEditing(true)}
                     >
-                      Confirmar eliminar
+                      Editar
                     </button>
                     <button
                       type="button"
-                      className="bg-gray-400 text-white px-4 py-2 text-sm rounded hover:bg-gray-500"
-                      onClick={cancelDelete} 
+                      className="bg-red-600 text-white px-4 py-2 text-sm rounded hover:bg-red-700"
+                      onClick={handleDelete}
+                    >
+                      Eliminar
+                    </button>
+                    <button
+                      type="button"
+                      className="bg-green-800 text-white px-4 py-2 text-sm rounded hover:bg-green-900"
+                      onClick={handleExit}
+                    >
+                      Salir
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    {hasChanges && (
+                      <button
+                        type="submit"
+                        form="personForm"
+                        className="bg-green-600 text-white px-4 py-2 text-sm rounded hover:bg-green-700"
+                      >
+                        Guardar
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={onCancel}
+                      className="bg-red-600 text-white px-4 py-2 text-sm rounded hover:bg-red-700"
                     >
                       Cancelar
                     </button>
                   </>
                 )}
+              </div>
+            </div>
 
-                <button
-                  type="button"
-                  className="bg-green-800 text-white px-4 py-2 text-sm rounded hover:bg-green-900"
-                  onClick={handleExit} 
-                >
-                  Salir
-                </button>
-              </>
-            ) : (
-              <>
-                {hasChanges && (
-                  <button
-                    type="submit"
-                    form="personForm"
-                    className="bg-green-600 text-white px-4 py-2 text-sm rounded hover:bg-green-700"
-                  >
-                    Guardar
-                  </button>
-                )}
-                <button
-                  type="button"
-                  onClick={onCancel} 
-                  className="bg-red-600 text-white px-4 py-2 text-sm rounded hover:bg-red-700"
-                >
-                  Cancelar
-                </button>
-              </>
-            )}
-          </div>
 
-                
-
-      <form
-        id="personForm"
-        onSubmit={onSubmit}
-        className="grid grid-cols-12 gap-6"
-      >
+      <form id="personForm" onSubmit={onSubmit} className="grid grid-cols-12 gap-6">
         {/* Persona */}
         {activeTab === "persona" && (
           <div className="col-span-12 border rounded-lg p-6 bg-gray-50">
@@ -356,30 +343,10 @@ export default function PersonForm({ data }: Props) {
               Información Personal
             </h2>
             <div className="grid grid-cols-6 gap-4">
-              <InputField
-                label="Nombre"
-                value={form.nombre}
-                readOnly={!isEditing}
-                onChange={(v) => handleChange("nombre", v)}
-              />
-              <InputField
-                label="Apellidos"
-                value={form.apellidos}
-                readOnly={!isEditing}
-                onChange={(v) => handleChange("apellidos", v)}
-              />
-              <InputField
-                label="Apodo"
-                value={form.apodo}
-                readOnly={!isEditing}
-                onChange={(v) => handleChange("apodo", v)}
-              />
-              <InputField
-                label="Cédula"
-                value={form.cedula}
-                readOnly={!isEditing}
-                onChange={(v) => handleChange("cedula", v)}
-              />
+              <InputField label="Nombre" value={form.nombre} readOnly={!isEditing} onChange={(v) => handleChange("nombre", v)}  />
+              <InputField label="Apellidos" value={form.apellidos} readOnly={!isEditing} onChange={(v) => handleChange("apellidos", v)} />
+              <InputField label="Apodo"  value={form.apodo} readOnly={!isEditing} onChange={(v) => handleChange("apodo", v)}  />
+              <InputField label="Cédula" value={form.cedula} readOnly={!isEditing} onChange={(v) => handleChange("cedula", v)}  />
               <InputField
                 label="Estado Civil"
                 value={form.estadoCivil}

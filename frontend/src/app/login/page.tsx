@@ -59,7 +59,7 @@ export default function Login() {
         "user",
         JSON.stringify({
           id: validUser.id,
-          name: validUser.name,
+          username: validUser.name,
           fullName: validUser.fullName,
           role: validUser.role,
         })

@@ -88,6 +88,7 @@ interface SearchParams {
   direccion: string;
   email: string;
   phone: string;
+  consultingType: string;
 }
 
 export default function SolicitudPrestamo() {
@@ -104,6 +105,7 @@ export default function SolicitudPrestamo() {
     direccion: "",
     email: "",
     phone: "",
+    consultingType: "",
   });
 
   // Cargar usuario solo en cliente
@@ -123,7 +125,7 @@ export default function SolicitudPrestamo() {
   const adminIds = [1, 6, 7, 8];
   const isAdmin = adminIds.includes(currentUser?.id);
 
-  // Cargar citas desde API
+  // Cargar citas desde APISS
   useEffect(() => {
     let cancelled = false;
 
@@ -184,22 +186,25 @@ export default function SolicitudPrestamo() {
     setSearchParams(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  
+const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
+  e.preventDefault();
 
-    const filteredAppointments = allAppointments.filter(a => {
-      const matches = 
-        (!searchParams.firstName || a.firstName.toLowerCase().includes(searchParams.firstName.toLowerCase())) &&
-        (!searchParams.lastName || a.lastName.toLowerCase().includes(searchParams.lastName.toLowerCase())) &&
-        (!searchParams.email || a.email.toLowerCase().includes(searchParams.email.toLowerCase())) &&
-        (!searchParams.phone || a.phone.toLowerCase().includes(searchParams.phone.toLowerCase())) &&
-        (!searchParams.direccion || a.appointmentAddress?.address.toLowerCase().includes(searchParams.direccion.toLowerCase()));
+  const filteredAppointments = allAppointments.filter(a => {
+    const matches = 
+      (!searchParams.firstName || a.firstName.toLowerCase().startsWith(searchParams.firstName.toLowerCase())) &&
+      (!searchParams.lastName || a.lastName.toLowerCase().startsWith(searchParams.lastName.toLowerCase())) &&
+      (!searchParams.email || a.email.toLowerCase().startsWith(searchParams.email.toLowerCase())) &&
+      (!searchParams.phone || a.phone.toLowerCase().startsWith(searchParams.phone.toLowerCase())) &&
+      (!searchParams.consultingType || a.consultingType.toLowerCase().startsWith(searchParams.consultingType.toLowerCase())) &&
+      (!searchParams.direccion || a.appointmentAddress?.address.toLowerCase().startsWith(searchParams.direccion.toLowerCase()));
 
-      return matches;
-    });
+    return matches;
+  });
 
-    setAppointments(filteredAppointments);
-  };
+  setAppointments(filteredAppointments);
+};
+
 
   return (
     <ScaleIn>
@@ -215,21 +220,27 @@ export default function SolicitudPrestamo() {
             {isAdmin && (
               <div className="flex flex-row gap-6 mt-3">
                 <div className="flex items-center gap-2">
-                  <input
+                 <input
                     id="showActive"
                     type="checkbox"
                     checked={showActive}
-                    onChange={() => setShowActive(!showActive)}
+                    onChange={() => {
+                      setShowActive(true);
+                      setShowInactive(false);
+                    }}
                     className="w-4 h-4 text-green-600 border-green-500 rounded focus:ring-green-500"
                   />
                   <label htmlFor="showActive" className="text-green-700 font-semibold">Activos</label>
                 </div>
                 <div className="flex items-center gap-2">
-                  <input
+                 <input
                     id="showInactive"
                     type="checkbox"
                     checked={showInactive}
-                    onChange={() => setShowInactive(!showInactive)}
+                    onChange={() => {
+                      setShowInactive(true);
+                      setShowActive(false);
+                    }}
                     className="w-4 h-4 text-green-600 border-green-500 rounded focus:ring-green-500"
                   />
                   <label htmlFor="showInactive" className="text-green-700 font-semibold">Inactivos</label>
@@ -268,6 +279,12 @@ export default function SolicitudPrestamo() {
               <input type="text" name="phone" value={searchParams.phone} onChange={handleChange}
                 placeholder="Ingrese el teléfono" className="w-full border border-green-600 rounded p-2 text-2x1 focus:outline-none focus:ring-1 focus:ring-blue-500"/>
             </div>
+
+             <div className="flex-1 min-w-[200px]">
+              <label className="block text-base text-green-700 font-bold mb-1">Tipo de Cita</label>
+              <input type="text" name="phone" value={searchParams.consultingType} onChange={handleChange}
+                placeholder="Ingrese el tipo de cita" className="w-full border border-green-600 rounded p-2 text-2x1 focus:outline-none focus:ring-1 focus:ring-blue-500"/>
+            </div>
           </div>
 
           {/* Tabla */}
@@ -280,11 +297,11 @@ export default function SolicitudPrestamo() {
                   <th className="px-6 py-3 text-left text-sm font-semibold uppercase">Dirección</th>
                   <th className="px-6 py-3 text-left text-sm font-semibold uppercase">E-Mail</th>
                   <th className="px-6 py-3 text-left text-sm font-semibold uppercase">Teléfono</th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold uppercase">Tipo de consulta</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold uppercase">Tipo de Cita</th>
                   {isAdmin && (
                     <>
-                      <th className="px-6 py-3 text-left text-sm font-semibold uppercase">Usuario</th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold uppercase">Correo Usuario</th>
+                      <th className="px-6 py-3 text-left text-sm font-semibold uppercase">Dueño</th>
+                     {/* <th className="px-6 py-3 text-left text-sm font-semibold uppercase">Email </th>*/}
                     </>
                   )}
                   <th className="px-6 py-3 text-center text-sm font-semibold uppercase">Acción</th>
@@ -311,7 +328,7 @@ export default function SolicitudPrestamo() {
                       {isAdmin && (
                         <>
                           <td className="px-6 py-4 text-sm text-gray-800">{a.userId?.userName}</td>
-                          <td className="px-6 py-4 text-sm text-gray-800">{a.userId?.email}</td>
+                         {/* <td className="px-6 py-4 text-sm text-gray-800">{a.userId?.email}</td>*/}
                         </>
                       )}
                       <td className="px-4 py-4 text-center w-[120px]">
