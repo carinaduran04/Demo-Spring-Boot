@@ -106,14 +106,13 @@ export default function ConsultaForm() {
     setOnCancelAction(null);
   };
 
-  const handleCancel = () => {
-    if (!hasChanges) {
-      router.push("/aplicaciones/consulta");
-      return;
-    }
+ const handleCancel = () => {
     showModalDialog(
       "¿Seguro que deseas cancelar la cita?",
-      () => router.push("/aplicaciones/consulta")
+      () => setFormData({
+        nombre: "", apellido: "", direccion: "", ciudad: "", email: "",
+        telefono: "", tipoConsulta: "", mensaje: "", fecha: "", usuarioAsignado: "",
+      })
     );
   };
 
@@ -186,8 +185,8 @@ export default function ConsultaForm() {
   return (
     <>
       <ScaleIn>
-        <div className="m-12 max-w-6xl mx-auto p-8 bg-gray-100 shadow-md rounded-sm border border-green-500 min-h-[60vh]">
-          <div className="flex justify-between items-center mb-6">
+        <div className="m-8 max-w-6xl mx-auto p-8 bg-gray-100 shadow-md rounded-sm border border-green-500 min-h-[60vh]">
+          <div className="flex justify-between items-center mb-4">
             <div>
               <h2 className="text-3xl font-bold text-green-700 mb-4">CREAR NUEVA CITA</h2>
               <p className="font-bold text-gray-700">Cuéntanos lo que buscas y lo haremos realidad.</p>
@@ -261,11 +260,29 @@ export default function ConsultaForm() {
                 <label className="block text-green-700 font-semibold mb-1">Mensaje<span className="text-red-500">*</span></label>
                 <textarea value={formData.mensaje} onChange={(e) => { handleChangeValue("mensaje", e.target.value); e.target.style.height = "auto"; e.target.style.height = e.target.scrollHeight + "px"; }} placeholder="Escribe tu mensaje aquí..." rows={1} required className="w-full px-3 py-2 border border-gray-400 rounded focus:outline-none focus:ring-2 focus:ring-green-500 resize-none overflow-hidden"/>
               </div>
-
               <div className="flex justify-center gap-6">
-                <button type="submit" className="text-xl bg-green-700 font-bold text-white px-12 py-2 rounded hover:bg-white hover:text-green-700 border-2 border-green-600 transition">Confirmar Cita ➔</button>
-                <button type="button" onClick={handleCancel} className="text-xl bg-red-600 font-bold text-white px-12 py-2 rounded hover:bg-white hover:text-red-600 border-2 border-red-600 transition">Cancelar ✖</button>
+                <button
+                  type="submit"
+                  className="text-xl bg-green-700 font-bold text-white px-12 py-2 rounded hover:bg-white hover:text-green-700 border-2 border-green-600 transition"
+                >
+                  CONFIRMAR CITA ➔
+                </button>
+
+                {!hasChanges ? (
+                  <button type="button" onClick={() => router.push("/aplicaciones/consulta")} className="text-xl bg-gray-700 font-bold text-white px-12 py-2 rounded hover:bg-white hover:text-gray-700 border-2 border-gray-700 transition">
+                    SALIR ⬅
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleCancel}
+                    className="text-xl bg-red-600 font-bold text-white px-12 py-2 rounded hover:bg-white hover:text-red-600 border-2 border-red-600 transition"
+                  >
+                    CANCELAR ✖
+                  </button>
+                )}
               </div>
+
             </form>
           </div>
         </div>

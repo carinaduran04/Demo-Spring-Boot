@@ -22,10 +22,10 @@ public class AppointmentUser {
     @Id
     @Column(name="USER_ID")
     private int userId;
-
+    
     @ManyToOne
-    @JoinColumn(name="ADDRESS_ID")
-    private AppointmentAddress appointmentAddress;
+    @JoinColumn(name = "ADDRESS_ID", referencedColumnName = "ADDRESS_ID")
+    private AppointmentAddress address;
 
     @ManyToOne
     @JoinColumn(name="USER_TYPE_ID")
@@ -66,4 +66,6 @@ public class AppointmentUser {
 
     @Column(name="LAST_UPDATE_DATE")
     private String lastUpdateDate;
+
+    
 }

@@ -17,9 +17,10 @@ export default function Navbar() {
     "/logo5.png",
   ];
   const [logoActivo, setLogoActivo] = useState(logos[0]);
-const [mostrarOpciones, setMostrarOpciones] = useState(false);
-const [userName, setUserName] = useState("");
- const pathname = usePathname();
+  const [mostrarOpciones, setMostrarOpciones] = useState(false);
+  const [userName, setUserName] = useState("");
+  const [address, setAddress] = useState("");
+  const pathname = usePathname();
 
   const disabledPages = [
     "/aplicaciones/haz_consulta",
@@ -34,7 +35,8 @@ const [userName, setUserName] = useState("");
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
       const parsed = JSON.parse(storedUser);
-      setUserName(parsed.fullName || parsed.userName);
+      setUserName(parsed.fullName || parsed.username);
+      setAddress(parsed.address || "Dirección no disponible");
     }
   }, []);
 
@@ -68,8 +70,9 @@ const [userName, setUserName] = useState("");
                   <span className="inline-block">roup</span>
                 </span>
               </h1>
+           
               <p className="text-xs text-white opacity-90">
-                Pembroke Pines Florida 33025
+                  {address}   {/* quiero que aqui aparezaca la direccion dependiendo el usuario que ingrese */}
               </p>
             </div>
 
@@ -95,18 +98,18 @@ const [userName, setUserName] = useState("");
             {[
               {
                 href: "/aplicaciones/inicio",
-                icon: <FaHome className="text-lg" />,
-                label: "Inicio",
+                icon: <FaHome className="text-lg font-bold " />,
+                label: "INICIO",
               },
               {
                 href: "/aplicaciones/consulta",
-                icon: <FaUser className="text-lg" />,
-                label: "Buscar",
+                icon: <FaUser className="text-lg font-bold " />,
+                label: "BUSCAR",
               },
               {
                 href: "/aplicaciones/haz_consulta",
-                icon: <FaWpforms className="text-lg" />,
-                label: "Crear Citas",
+                icon: <FaWpforms className="text-lg font-bold " />,
+                label: "CREAR CITA",
               },
             ].map((item, idx) => (
               <li key={idx} className="px-3 border-r border-white last:border-0">
@@ -153,7 +156,6 @@ const [userName, setUserName] = useState("");
                 href="/login"
                 className="bg-white text-green-600 px-3 py-1 rounded text-sm font-bold"
               >
-                Iniciar sesión
               </Link>
             )}
           </div>

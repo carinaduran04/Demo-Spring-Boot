@@ -13,6 +13,7 @@ interface User {
   userName: string;
   password: string;
   fullName?: string;
+  address?: any; 
 }
 
 export default function Login() {
@@ -38,15 +39,24 @@ export default function Login() {
     }
 
     // IDs de administradores
-    const adminIds = [1, 6, 7, 8];
+   const adminIds = [1, 6, 7, 8];
 
-    const mappedUsers = data.map((u: User) => ({
-      id: u.userId,
-      name: u.userName.trim().toLowerCase(),
-      pass: u.password.trim(),
-      fullName: u.fullName ?? u.userName,
-      role: adminIds.includes(u.userId) ? "admin" : "user",
-    }));
+      const mappedUsers = data.map((u: User) => {
+        // Manejo seguro del campo address (puede venir como objeto o string)
+        const addr =
+          typeof u.address === "object" && u.address !== null
+            ? u.address.address || u.address.city || "Dirección no disponible"
+            : u.address ?? "Dirección no disponible";
+
+        return {
+          id: u.userId,
+          name: u.userName?.trim().toLowerCase(),
+          pass: u.password?.trim(),
+          fullName: u.fullName ?? u.userName,
+          role: adminIds.includes(u.userId) ? "admin" : "user",
+          address: addr,
+        };
+      });
 
     const validUser = mappedUsers.find(
       (u) => u.name === user.trim().toLowerCase() && u.pass === pass.trim()
@@ -55,6 +65,7 @@ export default function Login() {
     if (validUser) {
       console.log("Usuario logueado:", validUser);
 
+      
       localStorage.setItem(
         "user",
         JSON.stringify({
@@ -62,6 +73,7 @@ export default function Login() {
           username: validUser.name,
           fullName: validUser.fullName,
           role: validUser.role,
+          address: validUser.address, 
         })
       );
 

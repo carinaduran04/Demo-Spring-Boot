@@ -37,16 +37,22 @@ public class AppointmentDetailService {
         return repository.findByStatus("ACTIVO");
     }
 
-    public AppointmentDetail updateAppointment(int id, AppointmentDetail updatedDetail) {
-    Optional<AppointmentDetail> existingOpt = repository.findById(id);
-    if (existingOpt.isPresent()) {
-        AppointmentDetail existing = existingOpt.get();
+   public AppointmentDetail updateAppointment(int id, AppointmentDetail updatedDetail) {
+        Optional<AppointmentDetail> existingOpt = repository.findById(id);
+        if (!existingOpt.isPresent()) {
+            throw new RuntimeException("Registro no encontrado con ID: " + id);
+        }
         
         // Actualiza
+        AppointmentDetail existing = existingOpt.get();
+
         if (updatedDetail.getFirstName() != null) {
             existing.setFirstName(updatedDetail.getFirstName().toUpperCase());
-            existing.setFullName(updatedDetail.getFullName() != null ? updatedDetail.getFullName().toUpperCase() : 
-                (updatedDetail.getFirstName() + " " + updatedDetail.getLastName()).toUpperCase());
+            existing.setFullName(
+                updatedDetail.getFullName() != null
+                    ? updatedDetail.getFullName().toUpperCase()
+                    : (updatedDetail.getFirstName() + " " + updatedDetail.getLastName()).toUpperCase()
+            );
         }
         if (updatedDetail.getLastName() != null) {
             existing.setLastName(updatedDetail.getLastName().toUpperCase());
@@ -55,7 +61,7 @@ public class AppointmentDetailService {
             existing.setPhone(updatedDetail.getPhone().toUpperCase());
         }
         if (updatedDetail.getEmail() != null) {
-            existing.setEmail(updatedDetail.getEmail()); // Email no en mayúsculas
+            existing.setEmail(updatedDetail.getEmail()); // Email se mantiene tal cual
         }
         if (updatedDetail.getConsultingType() != null) {
             existing.setConsultingType(updatedDetail.getConsultingType().toUpperCase());
@@ -69,24 +75,29 @@ public class AppointmentDetailService {
         if (updatedDetail.getStatus() != null) {
             existing.setStatus(updatedDetail.getStatus());
         }
-        
+
         if (updatedDetail.getAppointmentAddress() != null) {
-            if (updatedDetail.getAppointmentAddress().getAddress() != null) {
-                existing.getAppointmentAddress().setAddress(updatedDetail.getAppointmentAddress().getAddress().toUpperCase());
-            }
-            if (updatedDetail.getAppointmentAddress().getCity() != null) {
-                existing.getAppointmentAddress().setCity(updatedDetail.getAppointmentAddress().getCity().toUpperCase());
+            if (existing.getAppointmentAddress() == null) {
+                existing.setAppointmentAddress(updatedDetail.getAppointmentAddress());
+            } else {
+                if (updatedDetail.getAppointmentAddress().getAddress() != null) {
+                    existing.getAppointmentAddress().setAddress(
+                        updatedDetail.getAppointmentAddress().getAddress().toUpperCase()
+                    );
+                }
+                if (updatedDetail.getAppointmentAddress().getCity() != null) {
+                    existing.getAppointmentAddress().setCity(
+                        updatedDetail.getAppointmentAddress().getCity().toUpperCase()
+                    );
+                }
+                existing.getAppointmentAddress().setLastUpdateDate(new Date());
             }
         }
-        
-        // Actualiza fecha de última modificación
+
+        // --- Fecha de última actualización ---
         existing.setLastUpdateDate(new Date());
-      
+
+        // Guardar cambios
         return repository.save(existing);
-    } else {
-        throw new RuntimeException("Registro no encontrado con ID: " + id);
     }
 }
-}
-
-
