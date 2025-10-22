@@ -29,40 +29,47 @@ export default function Navbar() {
     line1: "",
   });
 
-  useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-  
-    if (storedUser) {
-      const parsed = JSON.parse(storedUser);
-      setCurrentUser(parsed);
-      setUserName(parsed.fullName || parsed.userName);
-      setAddress(parsed.address || "Dirección no disponible");
+ useEffect(() => {
+  const storedUser = localStorage.getItem("user");
 
-      console.log("🔍 Usuario detectado:", parsed);
+  if (storedUser) {
+    const parsed = JSON.parse(storedUser);
+    setCurrentUser(parsed);
+    setUserName(parsed.fullName || parsed.userName);
+    setAddress(parsed.address || "Dirección no disponible");
 
- if (parsed.role === "admin") {
+    console.log("Usuario detectado:", parsed);
+
+    const email = parsed.username?.toLowerCase() || "";
+
+    if (parsed.role === "admin") {
       setLogoActivo("/logo18.png");
       setUserText({
         line1: "Bienvenido a la plataforma",
       });
-    } else if (parsed.userName === "eddylo") {
+    } 
+    // Eddy
+    else if (email.includes("eddy")) {
       setLogoActivo("/eddylo.png");
       setUserText({
-        line1: "Eddy lopez",
+        line1: "ARQUITECTO EDDY LOPEZ",
       });
-    } else if (parsed.userName === "caroven") {
+    } 
+    // Carolina
+    else if (email.includes("caro")) {
       setLogoActivo("/caroven.png");
       setUserText({
-        line1: "CAROLINA VENDE ",
+        line1: "CAROLINA VENDE",
       });
-    } else {
+    } 
+    else {
       setLogoActivo("/defaultLogo.png");
       setUserText({
         line1: "Bienvenido",
       });
-       }
     }
-  }, []);
+  }
+}, []);
 
   const handleLogout = () => {
     localStorage.removeItem("user");
