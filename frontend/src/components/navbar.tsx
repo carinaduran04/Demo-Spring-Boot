@@ -8,35 +8,59 @@ import { usePathname } from "next/navigation";
 
 export default function Navbar() {
   const logos = [
-    "/logo18.png",
-    "/logo16.png",
-    "/logo2.png",
-    "/logo3.png",
-    "/logo4.png",
-    "/logo6.jpg",
-    "/logo5.png",
+    "/logo18.png", // Logo para administradores
+    "/eddylo.png", // Logo para Eddylo
+    "/caroven.png", // Logo para Carovende
   ];
+
   const [logoActivo, setLogoActivo] = useState(logos[0]);
   const [mostrarOpciones, setMostrarOpciones] = useState(false);
   const [userName, setUserName] = useState("");
   const [address, setAddress] = useState("");
-  const pathname = usePathname();
+  const [currentUser, setCurrentUser] = useState<any>(null);
 
+  const pathname = usePathname();
   const disabledPages = [
     "/aplicaciones/haz_consulta",
     "/aplicaciones/persona",
   ];
-
-  const isDisabled = disabledPages.some((page) =>
-    pathname.startsWith(page)
-  );
+  const isDisabled = disabledPages.some((page) => pathname.startsWith(page));
+  const [userText, setUserText] = useState<{line1: string}>({
+    line1: "",
+  });
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
+  
     if (storedUser) {
       const parsed = JSON.parse(storedUser);
-      setUserName(parsed.fullName || parsed.username);
+      setCurrentUser(parsed);
+      setUserName(parsed.fullName || parsed.userName);
       setAddress(parsed.address || "Dirección no disponible");
+
+      console.log("🔍 Usuario detectado:", parsed);
+
+ if (parsed.role === "admin") {
+      setLogoActivo("/logo18.png");
+      setUserText({
+        line1: "Bienvenido a la plataforma",
+      });
+    } else if (parsed.userName === "eddylo") {
+      setLogoActivo("/eddylo.png");
+      setUserText({
+        line1: "Eddy lopez",
+      });
+    } else if (parsed.userName === "caroven") {
+      setLogoActivo("/caroven.png");
+      setUserText({
+        line1: "CAROLINA VENDE ",
+      });
+    } else {
+      setLogoActivo("/defaultLogo.png");
+      setUserText({
+        line1: "Bienvenido",
+      });
+       }
     }
   }, []);
 
@@ -51,6 +75,7 @@ export default function Navbar() {
       <nav className="bg-green-600 text-white font-semibold px-14 py-2 shadow-md w-full">
         <div className="relative flex items-center justify-between">
           <div className="flex items-center space-x-2">
+            {/* Logo */}
             <div
               className="cursor-pointer"
               onClick={() => setMostrarOpciones(!mostrarOpciones)}
@@ -59,23 +84,33 @@ export default function Navbar() {
             </div>
             <div className="h-[3rem] w-[.2rem] bg-white rounded-[1.5rem]"></div>
 
+            {/* Texto según tipo de usuario */}
             <div className="flex flex-col items-start">
-              <h1 className="text-[1.5rem] font-semibold text-white group inline-flex text-2xl">
-                <span>DRT</span>
-                <span className="overflow-hidden transition-all duration-500 group-hover:w-[3ch] w-0">
-                  <span className="inline-block">ech</span>
-                </span>
-                <span>G</span>
-                <span className="overflow-hidden transition-all duration-500 group-hover:w-[4ch] w-0">
-                  <span className="inline-block">roup</span>
-                </span>
-              </h1>
-           
+              {currentUser?.role === "admin" ? (
+                <h1 className="text-[1.5rem] font-semibold text-white group inline-flex text-2xl">
+                  <span>DRT</span>
+                  <span className="overflow-hidden transition-all duration-500 group-hover:w-[3ch] w-0">
+                    <span className="inline-block">ech</span>
+                  </span>
+                  <span>G</span>
+                  <span className="overflow-hidden transition-all duration-500 group-hover:w-[4ch] w-0">
+                    <span className="inline-block">roup</span>
+                  </span>
+                </h1>
+              ) : (
+                <>
+                  <p className="text-white text-base font-semibold">{userText.line1}</p>
+                  
+                </>
+              )}
+
+              {/* Dirección */}
               <p className="text-xs text-white opacity-90">
-                  {address}   {/* quiero que aqui aparezaca la direccion dependiendo el usuario que ingrese */}
+                {address}
               </p>
             </div>
 
+            {/* Opciones de cambio de logo */}
             {mostrarOpciones && (
               <div className="absolute top-14 left-0 bg-white shadow-lg rounded-lg p-2 flex flex-col gap-2 z-50">
                 {logos.map((logo, i) => (
@@ -94,21 +129,22 @@ export default function Navbar() {
             )}
           </div>
 
+          {/* Menú de navegación */}
           <ul className="flex space-x-4 items-center text-white text-sm font-bold">
             {[
               {
                 href: "/aplicaciones/inicio",
-                icon: <FaHome className="text-lg font-bold " />,
+                icon: <FaHome className="text-lg font-bold" />,
                 label: "INICIO",
               },
               {
                 href: "/aplicaciones/consulta",
-                icon: <FaUser className="text-lg font-bold " />,
+                icon: <FaUser className="text-lg font-bold" />,
                 label: "BUSCAR",
               },
               {
                 href: "/aplicaciones/haz_consulta",
-                icon: <FaWpforms className="text-lg font-bold " />,
+                icon: <FaWpforms className="text-lg font-bold" />,
                 label: "CREAR CITA",
               },
             ].map((item, idx) => (
@@ -125,6 +161,7 @@ export default function Navbar() {
             ))}
           </ul>
 
+          {/* Info usuario */}
           <div className="flex items-center gap-4">
             {userName ? (
               <>
@@ -155,8 +192,7 @@ export default function Navbar() {
               <Link
                 href="/login"
                 className="bg-white text-green-600 px-3 py-1 rounded text-sm font-bold"
-              >
-              </Link>
+              />
             )}
           </div>
         </div>

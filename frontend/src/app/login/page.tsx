@@ -11,7 +11,9 @@ import Link from "next/link";
 interface User {
   userId: number;
   userName: string;
+  email: string;
   password: string;
+  userTypeId: number; 
   fullName?: string;
   address?: any; 
 }
@@ -50,9 +52,10 @@ export default function Login() {
 
         return {
           id: u.userId,
-          name: u.userName?.trim().toLowerCase(),
+          name:  u.email?.trim().toLowerCase(),
           pass: u.password?.trim(),
           fullName: u.fullName ?? u.userName,
+          userTypeId: u.userTypeId || 99,
           role: adminIds.includes(u.userId) ? "admin" : "user",
           address: addr,
         };
@@ -70,10 +73,12 @@ export default function Login() {
         "user",
         JSON.stringify({
           id: validUser.id,
-          username: validUser.name,
-          fullName: validUser.fullName,
-          role: validUser.role,
-          address: validUser.address, 
+            username: validUser.name, // email
+            userName: validUser.fullName || validUser.name,
+            fullName: validUser.fullName,
+            role: validUser.role,
+            address: validUser.address,
+            userTypeId: validUser.userTypeId,
         })
       );
 
@@ -181,7 +186,7 @@ export default function Login() {
         <FaUser />
         <input
           className="flex-1 border px-2 py-1 rounded"
-          placeholder="Usuario"
+          placeholder="Email"
           value={user}
           onChange={(e) => setUser(e.target.value)}
         />

@@ -42,7 +42,7 @@ export default function SolicitudPrestamo() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showActive, setShowActive] = useState(true);
-  const [showInactive, setShowInactive] = useState(true);
+  const [showInactive, setShowInactive] = useState(false);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [searchParams, setSearchParams] = useState<SearchParams>({
     firstName: "",
@@ -338,11 +338,11 @@ export default function SolicitudPrestamo() {
                     : "bg-green-600 text-white hover:bg-green-700"
                 }`}
               >
-                Anterior
+                ANTERIOR
               </button>
 
               <span className="text-green-700 font-bold">
-                Página {currentPage} de {totalPages}
+                PAGINA {currentPage} DE {totalPages}
               </span>
 
               <button
@@ -357,7 +357,7 @@ export default function SolicitudPrestamo() {
                     : "bg-green-600 text-white hover:bg-green-700"
                 }`}
               >
-                Siguiente
+                SIGUIENTE
               </button>
             </div>
           </div>
