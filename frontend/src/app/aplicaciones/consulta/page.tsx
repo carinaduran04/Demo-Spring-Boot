@@ -3,6 +3,7 @@ import Link from "next/link";
 import React, { useState, useEffect } from "react";
 import ScaleIn from "@/components/scaleIn";
 
+
 interface AppointmentAddress {
   addressId: number;
   address: string;
@@ -210,7 +211,7 @@ export default function SolicitudPrestamo() {
             </div>
           </div>
 
-          {/* Campos de búsqueda */}
+          {/*  búsqueda */}
           <div className="mt-6 flex flex-row flex-wrap gap-4 mb-6">
             <div className="flex-1 min-w-[200px]">
               <label className="block text-base text-green-700 font-bold mb-1"> Nombre </label>
@@ -249,7 +250,7 @@ export default function SolicitudPrestamo() {
             </div>
           </div>
 
-          {/* Tabla con scroll y paginación */}
+          {/* Tabla con scroll */}
           <div className="mt-4 border border-green-500 rounded-lg shadow-md overflow-hidden">
             <div className="max-h-[400px] overflow-y-auto">
               <table className="min-w-[900px] w-full">

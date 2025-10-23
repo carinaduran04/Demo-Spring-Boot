@@ -69,19 +69,27 @@ export default function ConsultaForm() {
 
   // Cargar usuarios (solo admin)
   useEffect(() => {
-    if (!isAdmin) return;
+    if (!currentUser) return; 
+    const isAdminUser = adminIds.includes(currentUser.userId || (currentUser as any).id);
+    if (!isAdminUser) return;
+
     const fetchUsers = async () => {
       try {
         const res = await fetch("/api/users");
-        if (!res.ok) throw new Error("Error al cargar usuarios");
+        if (!res.ok) {
+          console.warn("No se pudieron cargar usuarios. Código:", res.status);
+          return;
+        }
         const data: User[] = await res.json();
         setUsers(data);
       } catch (err) {
-        console.error(err);
+        console.error("Error al cargar usuarios:", err);
       }
     };
+
     fetchUsers();
-  }, [isAdmin]);
+  }, [currentUser]);
+
 
   useEffect(() => {
     const hayCambios = Object.values(formData).some((v) => v !== "");
@@ -234,7 +242,7 @@ export default function ConsultaForm() {
                 </div>
                 <div>
                   <label className="block text-green-700 font-semibold mb-1">Fecha de la consulta<span className="text-red-500">*</span></label>
-                  <input type="date" value={formData.fecha} onChange={(e) => handleChangeValue("fecha", e.target.value)} required className="w-full px-3 py-2 border border-gray-400 rounded focus:outline-none focus:ring-2 focus:ring-green-500"/>
+                  <input type="datetime-local" value={formData.fecha} onChange={(e) => handleChangeValue("fecha", e.target.value)} required className="w-full px-3 py-2 border border-gray-400 rounded focus:outline-none focus:ring-2 focus:ring-green-500"/>
                 </div>
 
               {isAdmin && (

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FaWpforms, FaUser, FaHome } from "react-icons/fa";
+import { FaWpforms, FaUser, FaHome, FaUserPlus } from "react-icons/fa";
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
@@ -136,37 +136,52 @@ export default function Navbar() {
             )}
           </div>
 
-          {/* Menú de navegación */}
+       {/* Menú de navegación */}
           <ul className="flex space-x-4 items-center text-white text-sm font-bold">
-            {[
-              {
-                href: "/aplicaciones/inicio",
-                icon: <FaHome className="text-lg font-bold" />,
-                label: "INICIO",
-              },
-              {
-                href: "/aplicaciones/consulta",
-                icon: <FaUser className="text-lg font-bold" />,
-                label: "BUSCAR",
-              },
-              {
-                href: "/aplicaciones/haz_consulta",
-                icon: <FaWpforms className="text-lg font-bold" />,
-                label: "CREAR CITA",
-              },
-            ].map((item, idx) => (
-              <li key={idx} className="px-3 border-r border-white last:border-0">
+            <li className="px-3 border-r border-white last:border-0">
+              <Link
+                href="/aplicaciones/inicio"
+                className="flex items-center gap-2 bg-white text-green-600 px-3 py-1.5 text-sm rounded-lg border-2 border-white transition-all duration-200 hover:bg-green-800 hover:text-white"
+              >
+                <FaHome className="text-lg font-bold" />
+                INICIO
+              </Link>
+            </li>
+
+            <li className="px-3 border-r border-white last:border-0">
+              <Link
+                href="/aplicaciones/consulta"
+                className="flex items-center gap-2 bg-white text-green-600 px-3 py-1.5 text-sm rounded-lg border-2 border-white transition-all duration-200 hover:bg-green-800 hover:text-white"
+              >
+                <FaUser className="text-lg font-bold" />
+                BUSCAR
+              </Link>
+            </li>
+
+            <li className="px-3 border-r border-white last:border-0">
+              <Link
+                href="/aplicaciones/haz_consulta"
+                className="flex items-center gap-2 bg-white text-green-600 px-3 py-1.5 text-sm rounded-lg border-2 border-white transition-all duration-200 hover:bg-green-800 hover:text-white"
+              >
+                <FaWpforms className="text-lg font-bold" />
+                CREAR CITA
+              </Link>
+            </li>
+
+            {/* Solo visible si el usuario es admin */}
+            {currentUser?.role === "admin" && (
+              <li className="px-3 border-r border-white last:border-0">
                 <Link
-                  href={item.href}
+                  href="/aplicaciones/crear_usuario"
                   className="flex items-center gap-2 bg-white text-green-600 px-3 py-1.5 text-sm rounded-lg border-2 border-white transition-all duration-200 hover:bg-green-800 hover:text-white"
-                  onClick={(e) => isDisabled && e.preventDefault()}
                 >
-                  {item.icon}
-                  {item.label}
+                  <FaUserPlus className="text-lg font-bold" />
+                  CREAR USUARIOS
                 </Link>
               </li>
-            ))}
+            )}
           </ul>
+
 
           {/* Info usuario */}
           <div className="flex items-center gap-4">

@@ -23,13 +23,13 @@ public class AppointmentCompany {
     @Column(name="COMPANY_ID")
     private int companyId;
 
-    @Column(name="NAME", length = 45)
+    @Column(name="NAME")
     private String name;
 
-    @Column(name="LOGO_URL", length = 200)
+    @Column(name="LOGO_URL")
     private String logoUrl;
 
-    @Column(name="CREATE_BY", length = 100)
+    @Column(name="CREATE_BY")
     private String createBy;
 
     @Column(name="CREATE_DATE")

@@ -21,4 +21,12 @@ public class AppointmentUserService {
     public Optional<AppointmentUser> getAppointmentById(int id){
         return repository.findById(id);
     }
+       // Nuevo método para guardar usuarios
+    public AppointmentUser saveUser(AppointmentUser user) {
+        if (user.getFirstName() != null && user.getLastName() != null) {
+            user.setFullName(user.getFirstName() + " " + user.getLastName());
+        }
+        user.setCreateDate(java.time.LocalDate.now().toString());
+        return repository.save(user);
+    }
 }

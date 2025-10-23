@@ -213,7 +213,7 @@
 
             console.log("Cita eliminada correctamente");
             
-              router.push("");
+              router.push("/aplicaciones/consulta");
             } catch (error) {
               console.error("Error al eliminar:", error);
               closeModal();

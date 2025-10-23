@@ -9,4 +9,6 @@ import java.util.Optional;
 @Repository
 public interface AppointmentUserRepository extends JpaRepository<AppointmentUser, Integer> {
     Optional<AppointmentUser> findByUserNameAndPassword(String userName, String password);
+    Optional<AppointmentUser> findByUserName(String userName); 
+    Optional<AppointmentUser> findByEmail(String email);    
 }

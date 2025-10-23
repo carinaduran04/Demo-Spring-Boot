@@ -36,7 +36,6 @@ public class PostController {
     public AppointmentDetailPage postAppointmentDetailPage(@RequestBody AppointmentDetailPage appointmentDetailPage){
         return appointmentDetailPageService.AppointmentPage(appointmentDetailPage);
     }
-
     // End --> Appointment Detail Page
     /////////////////////////////////////////////////
 
@@ -59,7 +58,6 @@ public class PostController {
         return appointmentDetailService.saveAppointment(appointmentDetail);
     }
 
-    // End --> Appointment Detail
     @DeleteMapping("/appointmentdetail/delete/{id}")
     public String deleteAppointmentDetail(@PathVariable int id){
         appointmentDetailService.softDeleteAppointment(id);
@@ -75,6 +73,7 @@ public class PostController {
     public List<AppointmentDetail> getActiveAppointments() {
         return appointmentDetailService.getActiveAppointments();
     }
+    // End --> Appointment Detail
 
     // Start --> Appointment User
     @Autowired
@@ -92,16 +91,25 @@ public class PostController {
     public Optional<AppointmentUser> getAppointmentUserById(@PathVariable int id){
         return appointmentUserService.getAppointmentById(id);
     }
-    // End --> Appointment User
+
+    // crear (guardar) un usuario
+    @PostMapping("/appointmentuser/save")
+    public AppointmentUser saveAppointmentUser(@RequestBody AppointmentUser user) {
+        if (user.getFirstName() != null && user.getLastName() != null) {
+            user.setFullName(user.getFirstName() + " " + user.getLastName());
+        }
+        user.setCreateDate(java.time.LocalDate.now().toString());
+        return appointmentUserService.saveUser(user);
+    }
 
     @PostMapping("/appointmentuser/login")
     public Optional<AppointmentUser> loginUser(@RequestParam String userName, @RequestParam String password) {
         return appointmentUserRepository.findByUserNameAndPassword(userName, password);
     }
 
-    // Obtener usuario con dirección
     @GetMapping("/appointmentuser/{id}/address")
     public Optional<AppointmentUser> getUserWithAddress(@PathVariable int id) {
         return appointmentUserRepository.findById(id);
     }
+    // End --> Appointment User
 }

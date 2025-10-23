@@ -7,7 +7,7 @@ const tabs = [
   { id: "contactos", label: "Contactos" },
   { id: "doctor", label: "Doctor" },
   { id: "mensaje", label: "Mensaje " },
-   { id: "consulta", label: "Consulta" }, 
+  { id: "consulta", label: "Consulta" }, 
 
 ];
 
