@@ -241,7 +241,7 @@ export default function ConsultaForm() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-green-700 font-semibold mb-1">Fecha de la consulta<span className="text-red-500">*</span></label>
+                  <label className="block text-green-700 font-semibold mb-1">Fecha  y Hora de la consulta<span className="text-red-500">*</span></label>
                   <input type="datetime-local" value={formData.fecha} onChange={(e) => handleChangeValue("fecha", e.target.value)} required className="w-full px-3 py-2 border border-gray-400 rounded focus:outline-none focus:ring-2 focus:ring-green-500"/>
                 </div>
 

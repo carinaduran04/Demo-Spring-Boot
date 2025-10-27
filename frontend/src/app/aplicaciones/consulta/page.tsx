@@ -1,8 +1,8 @@
 "use client";
 import Link from "next/link";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import ScaleIn from "@/components/scaleIn";
-
+import { useReactToPrint } from "react-to-print";
 
 interface AppointmentAddress {
   addressId: number;
@@ -25,7 +25,9 @@ interface Appointment {
   phone: string;
   email: string;
   consultingType: string;
+  consultingDate: string; 
   status: string;
+  
 }
 
 interface SearchParams {
@@ -35,6 +37,7 @@ interface SearchParams {
   email: string;
   phone: string;
   consultingType: string;
+  fecha: string;
 }
 
 export default function SolicitudPrestamo() {
@@ -52,13 +55,29 @@ export default function SolicitudPrestamo() {
     email: "",
     phone: "",
     consultingType: "",
+    fecha: "",
   });
 
   const [currentPage, setCurrentPage] = useState(1);
   const rowsPerPage = 8;
-
   const adminIds = [1, 6, 7, 8];
   const isAdmin = adminIds.includes(currentUser?.id);
+
+  const tableRef = useRef<HTMLTableElement>(null);
+  const handlePrint = useReactToPrint({
+    contentRef: tableRef,
+    documentTitle: "Citas Filtradas", 
+    pageStyle: `
+      @media print {
+       body { font-size: 10px; } 
+        .no-print { display: none !important; }
+        .max-h-[400px] { max-height: none !important; }
+        .overflow-y-auto { overflow: visible !important; }
+        table { width: 100% !important; min-width: auto !important; }
+        th, td { padding: 4px !important; font-size: 10px !important; }
+      }
+    `,
+  })
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -137,10 +156,10 @@ export default function SolicitudPrestamo() {
         (!searchParams.lastName || a.lastName.toLowerCase().startsWith(searchParams.lastName.toLowerCase())) &&
         (!searchParams.email || a.email.toLowerCase().startsWith(searchParams.email.toLowerCase())) &&
         (!searchParams.phone || a.phone.toLowerCase().startsWith(searchParams.phone.toLowerCase())) &&
-        (!searchParams.consultingType ||
-          a.consultingType.toLowerCase().startsWith(searchParams.consultingType.toLowerCase())) &&
-        (!searchParams.direccion ||
-          a.appointmentAddress?.address.toLowerCase().startsWith(searchParams.direccion.toLowerCase()));
+        (!searchParams.fecha ||  a.consultingDate.startsWith(searchParams.fecha.toLowerCase())) &&
+        (!searchParams.consultingType || a.consultingType.toLowerCase().startsWith(searchParams.consultingType.toLowerCase())) &&
+        (!searchParams.direccion || a.appointmentAddress?.address.toLowerCase().startsWith(searchParams.direccion.toLowerCase()));
+        
 
       return matches;
     });
@@ -149,11 +168,28 @@ export default function SolicitudPrestamo() {
     setCurrentPage(1);
   };
 
-  // 🔹 Paginación
+    // Función para formatear fecha y hora
+   function formatDateTime(dateString: string) {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    return date
+      .toLocaleString("es-DO", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true, 
+      })
+      .replace(",", ""); 
+  }
+
+  //  Paginación
   const totalPages = Math.ceil(appointments.length / rowsPerPage);
   const startIndex = (currentPage - 1) * rowsPerPage;
   const endIndex = startIndex + rowsPerPage;
   const paginatedAppointments = appointments.slice(startIndex, endIndex);
+ 
 
   return (
     <ScaleIn>
@@ -165,14 +201,27 @@ export default function SolicitudPrestamo() {
           <h2 className="text-4xl text-green-700 font-semibold text-center mb-2">
             HAZ TU CONSULTA
           </h2>
-
+         
           <div className="col-span-12 flex flex-col items-end pt-0">
-            <button
-              type="submit"
-              className="bg-green-600 font-bold text-white px-4 py-2 text-3x1 rounded hover:bg-green-700 transition"
-            >
-              BUSCAR
-            </button>
+            <div className="flex gap-4 mb-4">
+              <button
+                type="submit"
+                className="bg-green-600 font-bold text-white px-4 py-2 text-3x1 rounded hover:bg-green-700 transition"
+              >
+                BUSCAR
+              </button>
+              {/* Botón de impresión: solo visible si hay datos */}
+              {paginatedAppointments.length > 0 && (
+                <button
+                  type="button"
+                  onClick={handlePrint}
+                  className="bg-green-600 font-bold text-white px-4 py-2 text-3x1 rounded hover:bg-green-700 transition no-print"
+                >
+                  IMPRIMIR 
+                </button>
+              )}
+            </div>
+            
 
             <div className="flex flex-row gap-6 mt-3">
               <div className="flex items-center gap-2">
@@ -248,11 +297,16 @@ export default function SolicitudPrestamo() {
               <input type="text" name="consultingType" value={searchParams.consultingType} onChange={handleChange} placeholder="Ingrese el tipo de cita"
                 className="w-full border border-green-600 rounded p-2 text-2x1 focus:outline-none focus:ring-1 focus:ring-blue-500" />
             </div>
+            
+            <div className="flex-1 min-w-[200px]">
+              <label className="block text-base text-green-700 font-bold mb-1"> Fecha de la Cita </label>
+              <input type="date" name="fecha" value={searchParams.fecha} onChange={handleChange} placeholder="Ingrese la fecha de cita"
+                className="w-full border border-green-600 rounded p-2 text-2x1 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+            </div>
           </div>
 
-          {/* Tabla con scroll */}
-          <div className="mt-4 border border-green-500 rounded-lg shadow-md overflow-hidden">
-            <div className="max-h-[400px] overflow-y-auto">
+          <div ref={tableRef} className="mt-4 border border-green-500 rounded-lg shadow-md overflow-hidden">
+            <div className="max-h-[400px] overflow-y-auto" >   
               <table className="min-w-[900px] w-full">
                 <thead className="bg-green-600 text-white sticky top-0">
                   <tr>
@@ -262,10 +316,11 @@ export default function SolicitudPrestamo() {
                     <th className="px-6 py-3 text-left text-sm font-semibold uppercase"> E-Mail </th>
                     <th className="px-6 py-3 text-left text-sm font-semibold uppercase"> Teléfono </th>
                     <th className="px-6 py-3 text-left text-sm font-semibold uppercase"> Tipo de Cita </th>
+                    <th className="px-6 py-3 text-left text-sm font-semibold uppercase"> Fecha de la Cita </th>
                     {isAdmin && (
                     <th className="px-6 py-3 text-left text-sm font-semibold uppercase"> Dueño </th>
                     )}
-                    <th className="px-6 py-3 text-center text-sm font-semibold uppercase"> Acción </th>
+                    <th className="px-6 py-3 text-center text-sm font-semibold uppercase no-print"> Acción </th>
                   </tr>
                 </thead>
 
@@ -300,10 +355,11 @@ export default function SolicitudPrestamo() {
                         <td className="px-6 py-4 text-sm text-gray-800"> {a.email} </td>
                         <td className="px-6 py-4 text-sm text-gray-800"> {a.phone} </td>
                         <td className="px-6 py-4 text-sm text-gray-800"> {a.consultingType} </td>
+                        <td className="px-6 py-4 text-sm text-gray-800">  {formatDateTime(a.consultingDate)} </td>
                         {isAdmin && (
                           <td className="px-6 py-4 text-sm text-gray-800"> {a.userId?.userName} </td>
                         )}
-                        <td className="px-4 py-4 text-center">
+                        <td className="px-4 py-4 text-center no-print">
                           <Link
                             href={`/aplicaciones/persona/${a.appointmentDtlId}`}
                             className="bg-green-600 font-bold text-white px-2 py-1 rounded-md text-sm shadow-md hover:bg-green-700 transition inline-block"
@@ -325,10 +381,10 @@ export default function SolicitudPrestamo() {
                   )}
                 </tbody>
               </table>
-            </div>
-
+          </div>
+          
             {/* Barra de paginación */}
-            <div className="flex justify-center items-center gap-4 py-3 bg-gray-50 border-t border-green-500">
+            <div className="flex justify-center items-center gap-4 py-3 bg-gray-50 border-t border-green-500 no-print">
               <button
                 onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
                 disabled={currentPage === 1}

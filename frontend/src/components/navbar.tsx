@@ -8,9 +8,9 @@ import { usePathname } from "next/navigation";
 
 export default function Navbar() {
   const logos = [
-    "/logo18.png", // Logo para administradores
-    "/eddylo.png", // Logo para Eddylo
-    "/caroven.png", // Logo para Carovende
+    "/logo18.png", // Admin
+    "/eddylo.png", // Eddy
+    "/caro0.png", // Carolina
   ];
 
   const [logoActivo, setLogoActivo] = useState(logos[0]);
@@ -19,57 +19,44 @@ export default function Navbar() {
   const [address, setAddress] = useState("");
   const [currentUser, setCurrentUser] = useState<any>(null);
 
-  const pathname = usePathname();
+ const pathname = usePathname();
+
+  // Páginas donde los botones deben estar desactivados
   const disabledPages = [
     "/aplicaciones/haz_consulta",
     "/aplicaciones/persona",
+    "/aplicaciones/crear_usuario",
   ];
-  const isDisabled = disabledPages.some((page) => pathname.startsWith(page));
-  const [userText, setUserText] = useState<{line1: string}>({
-    line1: "",
-  });
+  const isOnDisabledPage = disabledPages.some((page) =>
+    pathname.startsWith(page)
+  );;
 
- useEffect(() => {
-  const storedUser = localStorage.getItem("user");
 
-  if (storedUser) {
-    const parsed = JSON.parse(storedUser);
-    setCurrentUser(parsed);
-    setUserName(parsed.fullName || parsed.userName);
-    setAddress(parsed.address || "Dirección no disponible");
+  const [userText, setUserText] = useState<{ line1: string }>({ line1: "" });
 
-    console.log("Usuario detectado:", parsed);
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
 
-    const email = parsed.username?.toLowerCase() || "";
+    if (storedUser) {
+      const parsed = JSON.parse(storedUser);
+      setCurrentUser(parsed);
+      setUserName(parsed.fullName || parsed.userName);
+      setAddress(parsed.address || "Dirección no disponible");
 
-    if (parsed.role === "admin") {
-      setLogoActivo("/logo18.png");
-      setUserText({
-        line1: "Bienvenido a la plataforma",
-      });
-    } 
-    // Eddy
-    else if (email.includes("eddy")) {
-      setLogoActivo("/eddylo.png");
-      setUserText({
-        line1: "ARQUITECTO EDDY LOPEZ",
-      });
-    } 
-    // Carolina
-    else if (email.includes("caro")) {
-      setLogoActivo("/caroven.png");
-      setUserText({
-        line1: "CAROLINA VENDE",
-      });
-    } 
-    else {
-      setLogoActivo("/defaultLogo.png");
-      setUserText({
-        line1: "Bienvenido",
-      });
+      const email = parsed.username?.toLowerCase() || "";
+
+      if (parsed.role === "admin") {
+        setLogoActivo("/logo18.png");
+        setUserText({ line1: "Bienvenido a la plataforma" });
+      } else if (email.includes("eddy")) {
+        setLogoActivo("/eddylo.png");
+        setUserText({ line1: "ARQUITECTO EDDY LOPEZ" });
+      } else if (email.includes("caro")) {
+        setLogoActivo("/caroo.png");
+        setUserText({ line1: "CAROLINA VENDE" });
+      }
     }
-  }
-}, []);
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("user");
@@ -129,7 +116,7 @@ export default function Navbar() {
                     }}
                     className="hover:bg-gray-100 rounded p-1"
                   >
-                    <Image src={logo} alt={`Logo ${i + 1}`} width={40} height={40} />
+                    <Image src={logo} alt={`Logo ${i + 1}`} width={50} height={50} />
                   </button>
                 ))}
               </div>
@@ -141,9 +128,11 @@ export default function Navbar() {
             <li className="px-3 border-r border-white last:border-0">
               <Link
                 href="/aplicaciones/inicio"
+                 onClick={(e) => isOnDisabledPage && e.preventDefault()}
                 className="flex items-center gap-2 bg-white text-green-600 px-3 py-1.5 text-sm rounded-lg border-2 border-white transition-all duration-200 hover:bg-green-800 hover:text-white"
               >
                 <FaHome className="text-lg font-bold" />
+                
                 INICIO
               </Link>
             </li>
@@ -151,6 +140,7 @@ export default function Navbar() {
             <li className="px-3 border-r border-white last:border-0">
               <Link
                 href="/aplicaciones/consulta"
+                 onClick={(e) => isOnDisabledPage && e.preventDefault()}
                 className="flex items-center gap-2 bg-white text-green-600 px-3 py-1.5 text-sm rounded-lg border-2 border-white transition-all duration-200 hover:bg-green-800 hover:text-white"
               >
                 <FaUser className="text-lg font-bold" />
@@ -161,6 +151,7 @@ export default function Navbar() {
             <li className="px-3 border-r border-white last:border-0">
               <Link
                 href="/aplicaciones/haz_consulta"
+                 onClick={(e) => isOnDisabledPage && e.preventDefault()}
                 className="flex items-center gap-2 bg-white text-green-600 px-3 py-1.5 text-sm rounded-lg border-2 border-white transition-all duration-200 hover:bg-green-800 hover:text-white"
               >
                 <FaWpforms className="text-lg font-bold" />
@@ -173,6 +164,7 @@ export default function Navbar() {
               <li className="px-3 border-r border-white last:border-0">
                 <Link
                   href="/aplicaciones/crear_usuario"
+                   onClick={(e) => isOnDisabledPage && e.preventDefault()}
                   className="flex items-center gap-2 bg-white text-green-600 px-3 py-1.5 text-sm rounded-lg border-2 border-white transition-all duration-200 hover:bg-green-800 hover:text-white"
                 >
                   <FaUserPlus className="text-lg font-bold" />

@@ -35,46 +35,70 @@ export default function CrearUsuario() {
   };
 
   const handleSubmit = async (e: any) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    const payload = {
-      userName: form.userName,
-      password: form.password,
-      firstName: form.firstName,
-      lastName: form.lastName,
-      fullName: `${form.firstName} ${form.lastName}`,
-      email: form.email,
-      title: form.title,
-      userTypeId: parseInt(form.userTypeId),
-      company: form.company,
-      role: form.role,
-      createDate: new Date().toISOString(),
-      createBy: "admin", // se ouede  cambiar si lo tomo del login
-    };
+  const payload = {
+    userName: form.userName,
+    password: form.password,
+    firstName: form.firstName,
+    lastName: form.lastName,
+    fullName: `${form.firstName} ${form.lastName}`,
+    email: form.email,
+    title: form.title,
+    userTypeId: parseInt(form.userTypeId),
+    company: form.company,
+    role: form.role,
+    createDate: new Date().toISOString(),
+    createBy: "admin",
+  };
 
+  try {
+    const res = await fetch("/api/appointmentuser/save", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+     if (res.ok) {
+    setModalMessage("Usuario creado correctamente");
+    setForm({
+      userName: "",
+      password: "",
+      firstName: "",
+      lastName: "",
+      email: "",
+      title: "",
+      userTypeId: "",
+      company: "",
+      role: "",
+    });
+  } else {
+    // Leer texto o JSON de error
+    let errorText = "";
     try {
-      const res = await fetch("/api/appointmentuser/save", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+      const data = await res.json();
+      errorText = JSON.stringify(data);
+    } catch {
+      errorText = await res.text();
+    }
 
-      if (res.ok) {
-        setModalMessage("Usuario creado correctamente");
-        setForm({
-          userName: "",
-          password: "",
-          firstName: "",
-          lastName: "",
-          email: "",
-          title: "",
-          userTypeId: "",
-          company: "",
-          role: "",
-        });
-      } else {
-        setModalMessage("Error al crear usuario");
-      }
+   // console.error("Error del backend:", errorText);
+
+    // Detectar si es un error típico de email duplicado
+    if (
+      res.status === 409 ||
+      errorText.toLowerCase().includes("duplicate") ||
+      errorText.toLowerCase().includes("email") ||
+      errorText.toLowerCase().includes("unique") ||
+      errorText.toLowerCase().includes("constraint") ||
+      errorText.toLowerCase().includes("internal server error")
+    ) {
+      setModalMessage("El correo electrónico ya está registrado. Intente con otro.");
+    } else {
+      setModalMessage("Error al crear usuario. Intente nuevamente.");
+    }
+  }
+  
       setShowModal(true);
     } catch (err) {
       console.error(err);
@@ -83,16 +107,37 @@ export default function CrearUsuario() {
     }
   };
 
-  const handleCancel = () => {
-    if (hasChanges) {
-      setModalMessage("¿Seguro que deseas cancelar el registro?");
-      setShowModal(true);
-    } else {
-      router.push("/aplicaciones/inicio");
-    }
-  };
+const handleCancel = () => {
+  if (hasChanges) {
+    setModalMessage("¿Seguro que deseas cancelar el registro?");
+    setOnOkAction(() => () => {
+      setForm({
+        userName: "",
+        password: "",
+        firstName: "",
+        lastName: "",
+        email: "",
+        title: "",
+        userTypeId: "",
+        company: "",
+        role: "",
+      });
+      setHasChanges(false);
+      setShowModal(false); // Cierra el modal
+    });
+    setOnCancelAction(() => () => {
+      setShowModal(false);
+    });
+    setShowModal(true);
+  }
+};
 
-  const closeModal = () => setShowModal(false);
+
+const closeModal = () => {
+  setShowModal(false);
+  setOnOkAction(null);
+  setOnCancelAction(null);
+};
 
   return (
     <>
