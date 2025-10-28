@@ -26,6 +26,7 @@ export default function Navbar() {
     "/aplicaciones/haz_consulta",
     "/aplicaciones/persona",
     "/aplicaciones/crear_usuario",
+   
   ];
   const isOnDisabledPage = disabledPages.some((page) =>
     pathname.startsWith(page)
@@ -163,12 +164,12 @@ export default function Navbar() {
             {currentUser?.role === "admin" && (
               <li className="px-3 border-r border-white last:border-0">
                 <Link
-                  href="/aplicaciones/crear_usuario"
-                   onClick={(e) => isOnDisabledPage && e.preventDefault()}
+                  href="/aplicaciones/usuarios"
+                 onClick={(e) => isOnDisabledPage && e.preventDefault()}
                   className="flex items-center gap-2 bg-white text-green-600 px-3 py-1.5 text-sm rounded-lg border-2 border-white transition-all duration-200 hover:bg-green-800 hover:text-white"
                 >
                   <FaUserPlus className="text-lg font-bold" />
-                  CREAR USUARIOS
+                  MANTENIMIENTO USUARIOS
                 </Link>
               </li>
             )}

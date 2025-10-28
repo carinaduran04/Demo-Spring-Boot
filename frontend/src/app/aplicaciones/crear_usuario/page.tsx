@@ -284,7 +284,7 @@ const closeModal = () => {
                 {!hasChanges ? (
                   <button
                     type="button"
-                    onClick={() => router.push("/aplicaciones/inicio")}
+                    onClick={() => router.push("/aplicaciones/usuarios")}
                     className="text-xl bg-gray-700 font-bold text-white px-12 py-2 rounded hover:bg-white hover:text-gray-700 border-2 border-gray-700 transition"
                   >
                     SALIR ⬅

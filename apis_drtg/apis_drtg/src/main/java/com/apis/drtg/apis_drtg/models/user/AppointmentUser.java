@@ -1,6 +1,7 @@
 package com.apis.drtg.apis_drtg.models.user;
 
 import com.apis.drtg.apis_drtg.models.AppointmentAddress;
+import com.apis.drtg.apis_drtg.models.AppointmentCompany;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -30,6 +31,11 @@ public class AppointmentUser {
     @ManyToOne
     @JoinColumn(name="USER_TYPE_ID")
     private AppointmentUserType appointmentUserType;
+
+    @ManyToOne
+    @JoinColumn(name="company_id")
+    private AppointmentCompany company;
+
 
     @Column(name="USER_NAME")
     private String userName;

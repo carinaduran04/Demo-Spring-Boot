@@ -38,6 +38,8 @@ interface SearchParams {
   phone: string;
   consultingType: string;
   fecha: string;
+  fechaInicio: string,
+  fechaFin: string,
 }
 
 export default function SolicitudPrestamo() {
@@ -56,6 +58,8 @@ export default function SolicitudPrestamo() {
     phone: "",
     consultingType: "",
     fecha: "",
+    fechaInicio: "",
+    fechaFin: "",
   });
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -64,9 +68,9 @@ export default function SolicitudPrestamo() {
   const isAdmin = adminIds.includes(currentUser?.id);
 
   const tableRef = useRef<HTMLTableElement>(null);
-  const handlePrint = useReactToPrint({
+ const handlePrint = useReactToPrint({
     contentRef: tableRef,
-    documentTitle: "Citas Filtradas", 
+    documentTitle: "Fecha de citas", 
     pageStyle: `
       @media print {
        body { font-size: 10px; } 
@@ -75,6 +79,7 @@ export default function SolicitudPrestamo() {
         .overflow-y-auto { overflow: visible !important; }
         table { width: 100% !important; min-width: auto !important; }
         th, td { padding: 4px !important; font-size: 10px !important; }
+        .fecha-citas { font-weight: bold; color: green; }
       }
     `,
   })
@@ -151,24 +156,29 @@ export default function SolicitudPrestamo() {
       if (!showActive && status === "active") return false;
       if (!showInactive && status !== "active") return false;
 
-      const matches =
-        (!searchParams.firstName || a.firstName.toLowerCase().startsWith(searchParams.firstName.toLowerCase())) &&
-        (!searchParams.lastName || a.lastName.toLowerCase().startsWith(searchParams.lastName.toLowerCase())) &&
-        (!searchParams.email || a.email.toLowerCase().startsWith(searchParams.email.toLowerCase())) &&
-        (!searchParams.phone || a.phone.toLowerCase().startsWith(searchParams.phone.toLowerCase())) &&
-        (!searchParams.fecha ||  a.consultingDate.startsWith(searchParams.fecha.toLowerCase())) &&
-        (!searchParams.consultingType || a.consultingType.toLowerCase().startsWith(searchParams.consultingType.toLowerCase())) &&
-        (!searchParams.direccion || a.appointmentAddress?.address.toLowerCase().startsWith(searchParams.direccion.toLowerCase()));
-        
+    const citaDate = new Date(a.consultingDate);
+    const desde = searchParams.fechaInicio ? new Date(searchParams.fechaInicio) : null;
+    const hasta = searchParams.fechaFin ? new Date(searchParams.fechaFin) : null;
 
-      return matches;
-    });
+    if (desde && citaDate < desde) return false;
+    if (hasta && citaDate > hasta) return false;
+
+
+      const matches =
+    (!searchParams.firstName || a.firstName.toLowerCase().startsWith(searchParams.firstName.toLowerCase())) &&
+    (!searchParams.lastName || a.lastName.toLowerCase().startsWith(searchParams.lastName.toLowerCase())) &&
+    (!searchParams.email || a.email.toLowerCase().startsWith(searchParams.email.toLowerCase())) &&
+    (!searchParams.phone || a.phone.toLowerCase().startsWith(searchParams.phone.toLowerCase())) &&
+    (!searchParams.consultingType || a.consultingType.toLowerCase().startsWith(searchParams.consultingType.toLowerCase())) &&
+    (!searchParams.direccion || a.appointmentAddress?.address.toLowerCase().startsWith(searchParams.direccion.toLowerCase()));
+
+  return matches;
+});
 
     setAppointments(filteredAppointments);
     setCurrentPage(1);
   };
 
-    // Función para formatear fecha y hora
    function formatDateTime(dateString: string) {
     if (!dateString) return "";
     const date = new Date(dateString);
@@ -190,7 +200,6 @@ export default function SolicitudPrestamo() {
   const endIndex = startIndex + rowsPerPage;
   const paginatedAppointments = appointments.slice(startIndex, endIndex);
  
-
   return (
     <ScaleIn>
       <div className="flex justify-center py-1 pt-8 px-50">
@@ -222,7 +231,6 @@ export default function SolicitudPrestamo() {
               )}
             </div>
             
-
             <div className="flex flex-row gap-6 mt-3">
               <div className="flex items-center gap-2">
                 <input
@@ -297,13 +305,38 @@ export default function SolicitudPrestamo() {
               <input type="text" name="consultingType" value={searchParams.consultingType} onChange={handleChange} placeholder="Ingrese el tipo de cita"
                 className="w-full border border-green-600 rounded p-2 text-2x1 focus:outline-none focus:ring-1 focus:ring-blue-500" />
             </div>
-            
+            {/*
             <div className="flex-1 min-w-[200px]">
               <label className="block text-base text-green-700 font-bold mb-1"> Fecha de la Cita </label>
               <input type="date" name="fecha" value={searchParams.fecha} onChange={handleChange} placeholder="Ingrese la fecha de cita"
                 className="w-full border border-green-600 rounded p-2 text-2x1 focus:outline-none focus:ring-1 focus:ring-blue-500" />
             </div>
-          </div>
+            */}
+
+             <div className="flex flex-col min-w-[250px]">
+              <label className="block text-base text-green-700 font-bold mb-1">
+                Rango de Fechas
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="date"
+                  name="fechaInicio"
+                  value={searchParams.fechaInicio || ""}
+                  onChange={handleChange}
+                  className="w-full border border-green-600 rounded p-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                />
+                <span className="text-green-700 font-bold">-</span>
+                <input
+                  type="date"
+                  name="fechaFin"
+                  value={searchParams.fechaFin || ""}
+                  onChange={handleChange}
+                  className="w-full border border-green-600 rounded p-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                />
+              </div>
+           </div>
+         </div>
+          
 
           <div ref={tableRef} className="mt-4 border border-green-500 rounded-lg shadow-md overflow-hidden">
             <div className="max-h-[400px] overflow-y-auto" >   

@@ -101,6 +101,19 @@ public class PostController {
         user.setCreateDate(java.time.LocalDate.now().toString());
         return appointmentUserService.saveUser(user);
     }
+    
+     // Actualizar usuario existente
+    @PutMapping("/appointmentuser/update/{id}")
+    public AppointmentUser updateAppointmentUser(@PathVariable int id, @RequestBody AppointmentUser updatedUser) {
+        return appointmentUserService.updateUser(id, updatedUser);
+    }
+
+    // Eliminar usuario 
+    @DeleteMapping("/appointmentuser/delete/{id}")
+    public String deleteAppointmentUser(@PathVariable int id) {
+        boolean deleted = appointmentUserService.deleteUser(id);
+        return deleted ? "Usuario marcado como INACTIVO correctamente" : "Usuario no encontrado";
+    }
 
     @PostMapping("/appointmentuser/login")
     public Optional<AppointmentUser> loginUser(@RequestParam String userName, @RequestParam String password) {

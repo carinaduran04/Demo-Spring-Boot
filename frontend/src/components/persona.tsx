@@ -397,18 +397,11 @@
               <InputField label="Correo" type="email" value={form.email} readOnly={!isEditing} className="col-span-3" onChange={(v) => handleChange("email", v)}/>
               <InputField label="Teléfono" value={form.telefono} readOnly={!isEditing} className="col-span-2" onChange={(v) => handleChange("telefono", v)} />
               <InputField label="Tipo de consulta" value={form.tipoConsulta} readOnly={!isEditing} className="col-span-3" onChange={(v) => handleChange("tipoConsulta", v)} />
-              
-             <InputField label="Fecha de la consulta" value={ form.fechaConsulta ? new Date(form.fechaConsulta).toLocaleString("en-US", 
-                { day: "2-digit",
-                  month: "2-digit",
-                  year: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                  hour12: true
-                })
-               : ""
-                }
-                readOnly={!isEditing} className="col-span-3" onChange={(v) => handleChange("fechaConsulta", v)} />
+              <InputField label="Fecha de la consulta" type="datetime-local" value={form.fechaConsulta
+                ? new Date(form.fechaConsulta).toISOString().slice(0, 16) : ""
+              }
+              readOnly={!isEditing} className="col-span-3" onChange={(v) => handleChange("fechaConsulta", v)} />
+
               <TextAreaField label="Mensaje recibido" value={form.mensaje || ""} readOnly={!isEditing} className="col-span-12" onChange={(v) => handleChange("mensaje", v)}
               />
             </div>

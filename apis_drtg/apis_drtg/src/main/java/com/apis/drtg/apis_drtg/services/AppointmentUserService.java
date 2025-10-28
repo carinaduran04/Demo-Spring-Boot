@@ -29,4 +29,26 @@ public class AppointmentUserService {
         user.setCreateDate(java.time.LocalDate.now().toString());
         return repository.save(user);
     }
+
+    // Actualizar usuario existente
+    public AppointmentUser updateUser(int id, AppointmentUser updatedUser) {
+        return repository.findById(id).map(user -> {
+          if (updatedUser.getFirstName() != null) user.setFirstName(updatedUser.getFirstName());
+        if (updatedUser.getLastName() != null) user.setLastName(updatedUser.getLastName());
+        if (updatedUser.getEmail() != null) user.setEmail(updatedUser.getEmail());
+        if (updatedUser.getUserName() != null) user.setUserName(updatedUser.getUserName());
+        if (updatedUser.getPassword() != null) user.setPassword(updatedUser.getPassword());
+        if (updatedUser.getCompany() != null) user.setCompany(updatedUser.getCompany()); // <- agregar
+        user.setFullName(user.getFirstName() + " " + user.getLastName());
+        return repository.save(user);
+        }).orElse(null);
+    }
+
+    // Eliminación lógica (soft delete)
+    public boolean deleteUser(int id) {
+        return repository.findById(id).map(user -> {
+            repository.save(user);
+            return true;
+        }).orElse(false);
+    }
 }
