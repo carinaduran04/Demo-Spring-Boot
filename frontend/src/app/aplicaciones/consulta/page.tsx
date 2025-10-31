@@ -2,6 +2,7 @@
 import Link from "next/link";
 import React, { useState, useEffect, useRef } from "react";
 import ScaleIn from "@/components/scaleIn";
+import Image from "next/image";
 import { useReactToPrint } from "react-to-print";
 
 interface AppointmentAddress {
@@ -14,6 +15,7 @@ interface Usuario {
   userId: number;
   userName: string;
   email: string;
+  company?: string; 
 }
 
 interface Appointment {
@@ -68,28 +70,49 @@ export default function SolicitudPrestamo() {
   const isAdmin = adminIds.includes(currentUser?.id);
 
   const tableRef = useRef<HTMLTableElement>(null);
- const handlePrint = useReactToPrint({
+
+  const handlePrint = useReactToPrint({
     contentRef: tableRef,
-    documentTitle: "Fecha de citas", 
+    documentTitle: "CITAS REGISTRADAS",
     pageStyle: `
       @media print {
-       body { font-size: 10px; } 
+        body { font-size: 10px; color: black; }
         .no-print { display: none !important; }
-        .max-h-[400px] { max-height: none !important; }
-        .overflow-y-auto { overflow: visible !important; }
-        table { width: 100% !important; min-width: auto !important; }
-        th, td { padding: 4px !important; font-size: 10px !important; }
-        .fecha-citas { font-weight: bold; color: green; }
+
+        table { width: 100% !important; border-collapse: collapse; }
+        th, td { padding: 4px !important; font-size: 10px !important; border: 1px solid #000; }
+
+        /* Column headers en verde */
+        th { color: green !important; }
+
+        /* Encabezado */
+        .print-header {
+          text-align: center;
+          margin-bottom: 10px;
+        }
+        .print-header img {
+          width: 80px;
+          height: auto;
+          margin-bottom: 5px;
+        }
+        .print-title {
+          font-size: 18px;
+          font-weight: bold;
+          color: green !important;
+          text-align: center;
+          margin-bottom: 10px;
+        }
       }
     `,
-  })
+  });
 
-  useEffect(() => {
+   useEffect(() => {
     if (typeof window !== "undefined") {
       const storedUser = localStorage.getItem("user");
       if (storedUser) {
         try {
-          setCurrentUser(JSON.parse(storedUser));
+          const parsedUser: Usuario = JSON.parse(storedUser);
+          setCurrentUser(parsedUser);
         } catch (e) {
           console.error("Error parsing user:", e);
         }
@@ -159,6 +182,12 @@ export default function SolicitudPrestamo() {
     const citaDate = new Date(a.consultingDate);
     const desde = searchParams.fechaInicio ? new Date(searchParams.fechaInicio) : null;
     const hasta = searchParams.fechaFin ? new Date(searchParams.fechaFin) : null;
+   
+    if (desde && hasta && desde.getTime() === hasta.getTime()) {
+      const citaString = citaDate.toISOString().split("T")[0];
+      const desdeString = desde.toISOString().split("T")[0];
+      return citaString === desdeString;
+    }
 
     if (desde && citaDate < desde) return false;
     if (hasta && citaDate > hasta) return false;
@@ -205,9 +234,9 @@ export default function SolicitudPrestamo() {
       <div className="flex justify-center py-1 pt-8 px-50">
         <form
           onSubmit={handleSearch}
-          className="bg-gray-100 border border-green-600 p-6 rounded-xl shadow-md w-full max-w-8xl flex flex-col min-h-[70vh]"
+          className="bg-gray-100 border border-green-600 p-6 rounded-xl shadow-md  w-full max-w-[110%] mx-auto flex flex-col min-h-[50vh]"
         >
-          <h2 className="text-4xl text-green-700 font-semibold text-center mb-2">
+          <h2 className="print-title text-4xl text-green-700 font-semibold text-center mb-2 no.print">
             HAZ TU CONSULTA
           </h2>
          
@@ -270,37 +299,38 @@ export default function SolicitudPrestamo() {
 
           {/*  búsqueda */}
           <div className="mt-6 flex flex-row flex-wrap gap-4 mb-6">
-            <div className="flex-1 min-w-[200px]">
+
+            <div className="flex-1 min-w-[120px] max-w-[200px]">
               <label className="block text-base text-green-700 font-bold mb-1"> Nombre </label>
               <input type="text" name="firstName" value={searchParams.firstName} onChange={handleChange} placeholder="Ingrese el nombre"
                 className="w-full border border-green-600 rounded p-2 text-2x1 focus:outline-none focus:ring-1 focus:ring-blue-500" />
             </div>
 
-            <div className="flex-1 min-w-[200px]">
+            <div className="flex-1 min-w-[120px] max-w-[200px]">
               <label className="block text-base text-green-700 font-bold mb-1"> Apellido </label>
               <input type="text" name="lastName" value={searchParams.lastName} onChange={handleChange} placeholder="Ingrese el apellido"
                 className="w-full border border-green-600 rounded p-2 text-2x1 focus:outline-none focus:ring-1 focus:ring-blue-500" />
             </div>
 
-            <div className="flex-1 min-w-[200px]">
+            <div className="flex-1 min-w-[120px] max-w-[200px]">
               <label className="block text-base text-green-700 font-bold mb-1"> Dirección </label>
               <input type="text" name="direccion" value={searchParams.direccion} onChange={handleChange} placeholder="Ingrese la dirección"
                 className="w-full border border-green-600 rounded p-2 text-2x1 focus:outline-none focus:ring-1 focus:ring-blue-500" />
             </div>
 
-            <div className="flex-1 min-w-[200px]">
+            <div className="flex-1 min-w-[120px] max-w-[200px]">
               <label className="block text-base text-green-700 font-bold mb-1"> E-Mail </label>
               <input type="text" name="email" value={searchParams.email} onChange={handleChange} placeholder="Ingrese el E-Mail"
                 className="w-full border border-green-600 rounded p-2 text-2x1 focus:outline-none focus:ring-1 focus:ring-blue-500" />
             </div>
 
-            <div className="flex-1 min-w-[200px]">
+            <div className="flex-1 min-w-[120px] max-w-[200px]">
               <label className="block text-base text-green-700 font-bold mb-1"> Teléfono </label>
               <input type="text" name="phone" value={searchParams.phone} onChange={handleChange} placeholder="Ingrese el teléfono" 
                 className="w-full border border-green-600 rounded p-2 text-2x1 focus:outline-none focus:ring-1 focus:ring-blue-500" />
             </div>
 
-            <div className="flex-1 min-w-[200px]">
+            <div className="flex-1 min-w-[120px] max-w-[200px]">
               <label className="block text-base text-green-700 font-bold mb-1"> Tipo de Cita </label>
               <input type="text" name="consultingType" value={searchParams.consultingType} onChange={handleChange} placeholder="Ingrese el tipo de cita"
                 className="w-full border border-green-600 rounded p-2 text-2x1 focus:outline-none focus:ring-1 focus:ring-blue-500" />
@@ -313,7 +343,7 @@ export default function SolicitudPrestamo() {
             </div>
             */}
 
-             <div className="flex flex-col min-w-[250px]">
+             <div className="flex-1 min-w-[120px] max-w-[200px]">
               <label className="block text-base text-green-700 font-bold mb-1">
                 Rango de Fechas
               </label>
@@ -338,8 +368,17 @@ export default function SolicitudPrestamo() {
          </div>
           
 
+         {/* 🔹 Tabla con encabezado impreso */}
           <div ref={tableRef} className="mt-4 border border-green-500 rounded-lg shadow-md overflow-hidden">
-            <div className="max-h-[400px] overflow-y-auto" >   
+            {/* Encabezado solo al imprimir */}
+            <div className="print-header hidden print:block">
+              <img
+                src={currentUser?.company?.logoUrl || "/logo18.png"} // <- logo dinámico
+                alt={currentUser?.company?.name || "Logo Cliente"}
+              />
+              <h2 className="print-title">CITAS REGISTRADAS</h2>
+            </div>
+            <div className="max-h-[300px] overflow-y-auto" >   
               <table className="min-w-[900px] w-full">
                 <thead className="bg-green-600 text-white sticky top-0">
                   <tr>

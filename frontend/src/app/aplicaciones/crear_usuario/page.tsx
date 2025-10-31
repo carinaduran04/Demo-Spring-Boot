@@ -18,6 +18,9 @@ export default function CrearUsuario() {
     userTypeId: "",
     company: "",
     role: "",
+    address: "",
+    city: "",
+   
   });
 
   const [showModal, setShowModal] = useState(false);
@@ -34,24 +37,36 @@ export default function CrearUsuario() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  
   const handleSubmit = async (e: any) => {
-  e.preventDefault();
+    e.preventDefault();
+    const cleanEmail = form.email ? form.email.trim().toLowerCase() : "";
 
-  const payload = {
-    userName: form.userName,
-    password: form.password,
-    firstName: form.firstName,
-    lastName: form.lastName,
-    fullName: `${form.firstName} ${form.lastName}`,
-    email: form.email,
-    title: form.title,
-    userTypeId: parseInt(form.userTypeId),
-    company: form.company,
-    role: form.role,
-    createDate: new Date().toISOString(),
-    createBy: "admin",
-  };
+   
+    if (!form.userTypeId || isNaN(parseInt(form.userTypeId))) {
+      setModalMessage("Debe seleccionar un tipo de usuario válido");
+      setShowModal(true);
+      return;
+    }
 
+    const payload = {
+      userName: form.userName,
+      password: form.password,
+      firstName: form.firstName,
+      lastName: form.lastName,
+      fullName: `${form.firstName} ${form.lastName}`,
+      email: cleanEmail,
+      title: form.title,
+      role: form.role,
+      company:
+        form.userTypeId === "1" || form.userTypeId === "2"
+          ? { name: form.company }
+          : null,
+      address: { address: form.address, city: form.city,  createBy: "admin", createDate: new Date().toISOString()},
+      appointmentUserType: { userTypeId: parseInt(form.userTypeId) },
+      createDate: new Date().toISOString(),
+      createBy: "admin",
+    };
   try {
     const res = await fetch("/api/appointmentuser/save", {
       method: "POST",
@@ -59,52 +74,71 @@ export default function CrearUsuario() {
       body: JSON.stringify(payload),
     });
 
+    let bodyText = await res.text();
+    let data;
+    try {
+      data = JSON.parse(bodyText);
+    } catch {
+      data = bodyText;
+    }
+
      if (res.ok) {
     setModalMessage("Usuario creado correctamente");
     setForm({
       userName: "",
-      password: "",
-      firstName: "",
-      lastName: "",
-      email: "",
-      title: "",
-      userTypeId: "",
-      company: "",
-      role: "",
+          password: "",
+          firstName: "",
+          lastName: "",
+          email: "",
+          title: "",
+          userTypeId: "",
+          company: "",
+          role: "",
+          address: "",
+          city: "",
     });
   } else {
-    // Leer texto o JSON de error
-    let errorText = "";
-    try {
-      const data = await res.json();
-      errorText = JSON.stringify(data);
-    } catch {
-      errorText = await res.text();
-    }
+ 
+  // Depuración temporal para ver la respuesta exacta del backend
+        console.log("Respuesta del servidor:", data);
 
-   // console.error("Error del backend:", errorText);
+        const msg =
+          typeof data === "string"
+            ? data.toLowerCase()
+            : JSON.stringify(data).toLowerCase();
 
-    // Detectar si es un error típico de email duplicado
-    if (
-      res.status === 409 ||
-      errorText.toLowerCase().includes("duplicate") ||
-      errorText.toLowerCase().includes("email") ||
-      errorText.toLowerCase().includes("unique") ||
-      errorText.toLowerCase().includes("constraint") ||
-      errorText.toLowerCase().includes("internal server error")
-    ) {
-      setModalMessage("El correo electrónico ya está registrado. Intente con otro.");
-    } else {
-      setModalMessage("Error al crear usuario. Intente nuevamente.");
-    }
-  }
-  
-      setShowModal(true);
-    } catch (err) {
-      console.error(err);
-      setModalMessage("Error de conexión con el servidor");
-      setShowModal(true);
-    }
+        // Detección más precisa de errores
+        if (
+          res.status === 409 ||
+          (msg.includes("correo") &&
+            (msg.includes("existe") ||
+              msg.includes("duplicate") ||
+              msg.includes("registrado"))) ||
+          (msg.includes("email") &&
+            (msg.includes("existe") ||
+              msg.includes("duplicate") ||
+              msg.includes("registrado")))
+        ) {
+          setModalMessage("El correo electrónico ya está registrado. Intente con otro.");
+        } else if (
+          msg.includes("usuario") &&
+          (msg.includes("existe") ||
+            msg.includes("duplicate") ||
+            msg.includes("en uso"))
+        ) {
+          setModalMessage("El nombre de usuario ya está en uso. Intente con otro.");
+        } else {
+          setModalMessage(`Error al crear usuario: ${msg}`);
+        }
+      }
+
+
+   setShowModal(true);
+} catch (err) {
+  console.error(err);
+  setModalMessage("Error de conexión con el servidor");
+  setShowModal(true);
+}
   };
 
 const handleCancel = () => {
@@ -113,14 +147,16 @@ const handleCancel = () => {
     setOnOkAction(() => () => {
       setForm({
         userName: "",
-        password: "",
-        firstName: "",
-        lastName: "",
-        email: "",
-        title: "",
-        userTypeId: "",
-        company: "",
-        role: "",
+          password: "",
+          firstName: "",
+          lastName: "",
+          email: "",
+          title: "",
+          userTypeId: "",
+          company: "",
+          role: "",
+          address: "",
+          city: "",
       });
       setHasChanges(false);
       setShowModal(false); // Cierra el modal
@@ -131,7 +167,6 @@ const handleCancel = () => {
     setShowModal(true);
   }
 };
-
 
 const closeModal = () => {
   setShowModal(false);
@@ -155,9 +190,11 @@ const closeModal = () => {
             <img src="/logo18.png" alt="Logo" className="w-20 h-auto" />
           </div>
 
+         
           <div className="bg-gray-50 border border-green-500 shadow-md rounded-lg p-6">
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Usuario y Contraseña */}
                 <div>
                   <label className="block text-green-700 font-semibold mb-2">
                     Nombre de usuario<span className="text-red-500">*</span>
@@ -183,9 +220,8 @@ const closeModal = () => {
                     className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg shadow-sm text-gray-800 focus:border-green-500 focus:ring-4 focus:ring-green-200 transition duration-200"
                   />
                 </div>
-              </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Nombre y Apellido */}
                 <div>
                   <label className="block text-green-700 font-semibold mb-2">
                     Nombre<span className="text-red-500">*</span>
@@ -210,9 +246,8 @@ const closeModal = () => {
                     className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg shadow-sm text-gray-800 focus:border-green-500 focus:ring-4 focus:ring-green-200 transition duration-200"
                   />
                 </div>
-              </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Email y Título */}
                 <div>
                   <label className="block text-green-700 font-semibold mb-2">
                     Correo electrónico<span className="text-red-500">*</span>
@@ -228,21 +263,6 @@ const closeModal = () => {
                 </div>
                 <div>
                   <label className="block text-green-700 font-semibold mb-2">
-                    Compañía<span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    name="company"
-                    value={form.company}
-                    onChange={handleChange}
-                    required
-                    className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg shadow-sm text-gray-800 focus:border-green-500 focus:ring-4 focus:ring-green-200 transition duration-200"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-green-700 font-semibold mb-2">
                     Título
                   </label>
                   <input
@@ -252,7 +272,47 @@ const closeModal = () => {
                     className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg shadow-sm text-gray-800 focus:border-green-500 focus:ring-4 focus:ring-green-200 transition duration-200"
                   />
                 </div>
-                
+
+                {/* Dirección y Ciudad */}
+                <div>
+                  <label className="block text-green-700 font-semibold mb-2">
+                    Dirección<span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    name="address"
+                    value={form.address}
+                    onChange={handleChange}
+                    required
+                    className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg"
+                  />
+                </div>
+                <div>
+                  <label className="block text-green-700 font-semibold mb-2">
+                    Ciudad<span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    name="city"
+                    value={form.city}
+                    onChange={handleChange}
+                    required
+                    className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg"
+                  />
+                </div>
+
+              {/* Compañía siempre visible */}
+                <div>
+                  <label className="block text-green-700 font-semibold mb-2">
+                    Compañía
+                  </label>
+                  <input
+                    name="company"
+                    value={form.company}
+                    onChange={handleChange}
+                    placeholder="Nombre de la compañía"
+                    className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg"
+                  />
+                </div>
+               {/* Tipo de usuario */}
                 <div>
                   <label className="block text-green-700 font-semibold mb-2">
                     Tipo de usuario<span className="text-red-500">*</span>
@@ -262,16 +322,14 @@ const closeModal = () => {
                     value={form.userTypeId}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg shadow-sm text-gray-800 focus:border-green-500 focus:ring-4 focus:ring-green-200 transition duration-200"
+                    className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg"
                   >
                     <option value="">Seleccione tipo de usuario</option>
                     <option value="1">ADMIN</option>
-                    <option value="2">LOAN</option>
-                    <option value="3">MED</option>
-                    <option value="4">SALES</option>
+                    <option value="2">CLIENT</option>
                   </select>
                 </div>
-              </div>
+               </div>
 
               <div className="flex justify-center gap-6 pt-4">
                 <button
@@ -284,7 +342,7 @@ const closeModal = () => {
                 {!hasChanges ? (
                   <button
                     type="button"
-                    onClick={() => router.push("/aplicaciones/usuarios")}
+                    onClick={() => router.push("/aplicaciones/mantenimiento")}
                     className="text-xl bg-gray-700 font-bold text-white px-12 py-2 rounded hover:bg-white hover:text-gray-700 border-2 border-gray-700 transition"
                   >
                     SALIR ⬅

@@ -7,33 +7,23 @@ import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 
 export default function Navbar() {
-  const logos = [
-    "/logo18.png", // Admin
-    "/eddylo.png", // Eddy
-    "/caro0.png", // Carolina
-  ];
-
-  const [logoActivo, setLogoActivo] = useState(logos[0]);
-  const [mostrarOpciones, setMostrarOpciones] = useState(false);
+  const [logoActivo, setLogoActivo] = useState("/logo18.png"); // logo por defecto
   const [userName, setUserName] = useState("");
   const [address, setAddress] = useState("");
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const [userText, setUserText] = useState<{ line1: string }>({ line1: "" });
 
- const pathname = usePathname();
+  const pathname = usePathname();
 
-  // Páginas donde los botones deben estar desactivados
   const disabledPages = [
     "/aplicaciones/haz_consulta",
     "/aplicaciones/persona",
     "/aplicaciones/crear_usuario",
-   
+    "/aplicaciones/usu",
   ];
   const isOnDisabledPage = disabledPages.some((page) =>
     pathname.startsWith(page)
-  );;
-
-
-  const [userText, setUserText] = useState<{ line1: string }>({ line1: "" });
+  );
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
@@ -46,6 +36,7 @@ export default function Navbar() {
 
       const email = parsed.username?.toLowerCase() || "";
 
+      // 🔹 Aquí se define qué logo y texto mostrar según el usuario
       if (parsed.role === "admin") {
         setLogoActivo("/logo18.png");
         setUserText({ line1: "Bienvenido a la plataforma" });
@@ -53,7 +44,7 @@ export default function Navbar() {
         setLogoActivo("/eddylo.png");
         setUserText({ line1: "ARQUITECTO EDDY LOPEZ" });
       } else if (email.includes("caro")) {
-        setLogoActivo("/caroo.png");
+        setLogoActivo("/carooo.png");
         setUserText({ line1: "CAROLINA VENDE" });
       }
     }
@@ -71,12 +62,7 @@ export default function Navbar() {
         <div className="relative flex items-center justify-between">
           <div className="flex items-center space-x-2">
             {/* Logo */}
-            <div
-              className="cursor-pointer"
-              onClick={() => setMostrarOpciones(!mostrarOpciones)}
-            >
-              <Image src={logoActivo} alt="Logo activo" width={50} height={50} />
-            </div>
+            <Image src={logoActivo} alt="Logo activo" width={60} height={60} />
             <div className="h-[3rem] w-[.2rem] bg-white rounded-[1.5rem]"></div>
 
             {/* Texto según tipo de usuario */}
@@ -95,45 +81,23 @@ export default function Navbar() {
               ) : (
                 <>
                   <p className="text-white text-base font-semibold">{userText.line1}</p>
-                  
                 </>
               )}
 
               {/* Dirección */}
-              <p className="text-xs text-white opacity-90">
-                {address}
-              </p>
+              <p className="text-xs text-white opacity-90">{address}</p>
             </div>
-
-            {/* Opciones de cambio de logo */}
-            {mostrarOpciones && (
-              <div className="absolute top-14 left-0 bg-white shadow-lg rounded-lg p-2 flex flex-col gap-2 z-50">
-                {logos.map((logo, i) => (
-                  <button
-                    key={i}
-                    onClick={() => {
-                      setLogoActivo(logo);
-                      setMostrarOpciones(false);
-                    }}
-                    className="hover:bg-gray-100 rounded p-1"
-                  >
-                    <Image src={logo} alt={`Logo ${i + 1}`} width={50} height={50} />
-                  </button>
-                ))}
-              </div>
-            )}
           </div>
 
-       {/* Menú de navegación */}
+          {/* Menú de navegación */}
           <ul className="flex space-x-4 items-center text-white text-sm font-bold">
             <li className="px-3 border-r border-white last:border-0">
               <Link
                 href="/aplicaciones/inicio"
-                 onClick={(e) => isOnDisabledPage && e.preventDefault()}
+                onClick={(e) => isOnDisabledPage && e.preventDefault()}
                 className="flex items-center gap-2 bg-white text-green-600 px-3 py-1.5 text-sm rounded-lg border-2 border-white transition-all duration-200 hover:bg-green-800 hover:text-white"
               >
                 <FaHome className="text-lg font-bold" />
-                
                 INICIO
               </Link>
             </li>
@@ -141,7 +105,7 @@ export default function Navbar() {
             <li className="px-3 border-r border-white last:border-0">
               <Link
                 href="/aplicaciones/consulta"
-                 onClick={(e) => isOnDisabledPage && e.preventDefault()}
+                onClick={(e) => isOnDisabledPage && e.preventDefault()}
                 className="flex items-center gap-2 bg-white text-green-600 px-3 py-1.5 text-sm rounded-lg border-2 border-white transition-all duration-200 hover:bg-green-800 hover:text-white"
               >
                 <FaUser className="text-lg font-bold" />
@@ -152,7 +116,7 @@ export default function Navbar() {
             <li className="px-3 border-r border-white last:border-0">
               <Link
                 href="/aplicaciones/haz_consulta"
-                 onClick={(e) => isOnDisabledPage && e.preventDefault()}
+                onClick={(e) => isOnDisabledPage && e.preventDefault()}
                 className="flex items-center gap-2 bg-white text-green-600 px-3 py-1.5 text-sm rounded-lg border-2 border-white transition-all duration-200 hover:bg-green-800 hover:text-white"
               >
                 <FaWpforms className="text-lg font-bold" />
@@ -164,8 +128,8 @@ export default function Navbar() {
             {currentUser?.role === "admin" && (
               <li className="px-3 border-r border-white last:border-0">
                 <Link
-                  href="/aplicaciones/usuarios"
-                 onClick={(e) => isOnDisabledPage && e.preventDefault()}
+                  href="/aplicaciones/mantenimiento"
+                  onClick={(e) => isOnDisabledPage && e.preventDefault()}
                   className="flex items-center gap-2 bg-white text-green-600 px-3 py-1.5 text-sm rounded-lg border-2 border-white transition-all duration-200 hover:bg-green-800 hover:text-white"
                 >
                   <FaUserPlus className="text-lg font-bold" />
@@ -174,7 +138,6 @@ export default function Navbar() {
               </li>
             )}
           </ul>
-
 
           {/* Info usuario */}
           <div className="flex items-center gap-4">

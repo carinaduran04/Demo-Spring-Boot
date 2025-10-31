@@ -5,6 +5,17 @@ import ScaleIn from "@/components/scaleIn";
 import { useRouter } from "next/navigation";
 import { useReactToPrint } from "react-to-print";
 
+interface Company {
+  companyId: number;
+  name: string;
+  logoUrl?: string;
+}
+
+interface AppointmentUserType {
+  userTypeId: number;
+  name: string;
+}
+
 interface Usuario {
   userId: number;
   userName: string;
@@ -12,10 +23,10 @@ interface Usuario {
   lastName: string;
   email: string;
   title: string;
-  company: string;
-  userTypeId: number;
+  company?: Company; 
+  appointmentUserType?: AppointmentUserType;
   role: string;
-  status: string;
+  status?: string;  
   createDate: string;
 }
 
@@ -29,45 +40,47 @@ interface SearchParams {
 }
 
 export default function BuscarUsuarios() {
-  const router = useRouter(); 
+  const router = useRouter();
   const [allUsers, setAllUsers] = useState<Usuario[]>([]);
   const [users, setUsers] = useState<Usuario[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+
+  const [showActive, setShowActive] = useState(false);
+  const [showInactive, setShowInactive] = useState(false);
+
   const [searchParams, setSearchParams] = useState<SearchParams>({
     firstName: "",
     lastName: "",
     email: "",
     company: "",
     userTypeId: "",
-    status: "ACTIVE",
+    status: "",
   });
 
   const rowsPerPage = 8;
   const tableRef = useRef<HTMLTableElement>(null);
 
-  const handlePrint = useReactToPrint({
-    contentRef: tableRef,
-    documentTitle: "Usuarios registrados",
-    pageStyle: `
-         @media print {
+const handlePrint = useReactToPrint({
+  contentRef: tableRef,
+  documentTitle: "Usuarios registrados",
+  pageStyle: `
+   @media print {
         body { font-size: 10px; }
         .no-print { display: none !important; }
-        .max-h-[400px] { max-height: none !important; }
-        .overflow-y-auto { overflow: visible !important; }
-        table { width: 100% !important; min-width: auto !important; border-collapse: collapse; }
+
+        table { width: 100% !important; border-collapse: collapse; }
         th, td { padding: 4px !important; font-size: 10px !important; border: 1px solid #000; }
-        .print-title {
-          text-align: center;
-          font-size: 18px;
-          font-weight: bold;
-          margin-bottom: 10px;
-        }
+
+        /* Column headers en verde */
+        th { color: green !important; }
+
+        /* Título principal en verde */
+        .print-title { text-align: center; font-size: 18px; font-weight: bold; margin-bottom: 10px; color: green !important; }
       }
     `,
   });
-
 
   useEffect(() => {
     async function fetchUsers() {
@@ -95,14 +108,39 @@ export default function BuscarUsuarios() {
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    const filtered = allUsers.filter(u =>
-      (!searchParams.firstName || u.firstName?.toLowerCase().startsWith(searchParams.firstName.toLowerCase())) &&
-      (!searchParams.lastName || u.lastName?.toLowerCase().startsWith(searchParams.lastName.toLowerCase())) &&
-      (!searchParams.email || u.email?.toLowerCase().startsWith(searchParams.email.toLowerCase())) &&
-      (!searchParams.company || u.company?.toLowerCase().startsWith(searchParams.company.toLowerCase())) &&
-      (!searchParams.userTypeId || u.userTypeId.toString() === searchParams.userTypeId) &&
-      (!searchParams.status || u.status?.toLowerCase() === searchParams.status.toLowerCase())
-    );
+    const filtered = allUsers.filter((u) => {
+      const nameMatch =
+        !searchParams.firstName ||
+        (u.firstName && u.firstName.toLowerCase().includes(searchParams.firstName.toLowerCase()));
+      const lastNameMatch =
+        !searchParams.lastName ||
+        (u.lastName && u.lastName.toLowerCase().includes(searchParams.lastName.toLowerCase()));
+      const emailMatch =
+        !searchParams.email ||
+        (u.email && u.email.toLowerCase().includes(searchParams.email.toLowerCase()));
+      const companyMatch =
+        !searchParams.company ||
+        (u.company?.name && u.company.name.toLowerCase().includes(searchParams.company.toLowerCase()));
+      const userTypeMatch =
+        !searchParams.userTypeId ||
+        (u.appointmentUserType?.name && u.appointmentUserType.name.toLowerCase() === searchParams.userTypeId.toLowerCase());
+     
+        let statusMatch = true;
+      const status = u.status?.toLowerCase();
+
+      if (showActive && !showInactive) statusMatch = status === "active";
+      else if (!showActive && showInactive) statusMatch = status === "inactive";
+      else if (showActive && showInactive) statusMatch = status === "active" || status === "inactive";
+  
+        return (
+        nameMatch &&
+        lastNameMatch &&
+        emailMatch &&
+        companyMatch &&
+        userTypeMatch &&
+        statusMatch
+      );
+    });
 
     setUsers(filtered);
     setCurrentPage(1);
@@ -115,15 +153,14 @@ export default function BuscarUsuarios() {
     currentPage * rowsPerPage
   );
 
-  const userTypeName = (id: number) => {
-    switch (id) {
-      case 1: return "ADMIN";
-      case 2: return "LOAN";
-      case 3: return "MED";
-      case 4: return "SALES";
-      default: return "N/A";
-    }
-  };
+const userTypeName = (id: number) => {
+  switch (id) {
+    case 1: return "ADMIN";
+    case 2: return "CLIENT";
+    default: return "N/A";
+  }
+};
+
 
   const handleClick = () => {
     router.push("/aplicaciones/crear_usuario"); 
@@ -136,9 +173,72 @@ export default function BuscarUsuarios() {
           onSubmit={handleSearch}
           className="bg-gray-100 border border-green-600 p-8 rounded-xl shadow-md w-full max-w-8xl flex flex-col min-h-[70vh]"
         >
-          <h2 className="text-3xl text-green-700 font-semibold text-center mb-4">
+          <h2 className="print-title text-3xl text-green-700 font-semibold text-center mb-4">
              USUARIOS REGISTRADOS
           </h2>
+
+               <div className="flex justify-end gap-4 mb-2">
+            <button
+              type="submit"
+              className="bg-green-600 font-bold text-white px-4 py-2 rounded hover:bg-green-700 transition"
+            >
+              BUSCAR
+            </button>
+
+             <button
+                type="button" 
+                className="bg-green-600 font-bold text-white px-4 py-2 rounded hover:bg-green-700 transition"
+                onClick={handleClick}
+                >
+                CREAR USUARIO 
+                </button>
+            {users.length > 0 && (
+              <button
+                type="button"
+                onClick={handlePrint}
+                className="bg-green-600 font-bold text-white px-4 py-2 rounded hover:bg-green-700 transition no-print"
+              >
+                IMPRIMIR
+              </button>
+            )}
+          </div>
+
+          <div className="flex justify-end gap-6 mt-3">
+                <div className="flex items-center gap-2 ">
+                  <input
+                    id="showActive"
+                    type="checkbox"
+                    checked={showActive}
+                    onChange={() => {
+                      setShowActive(prev => !prev);
+                      if (showInactive && !showActive) setShowInactive(false); // evita ambos marcados
+                    }}
+                    className={`w-5 h-5 rounded cursor-pointer border border-green-600 ${
+                      showActive ? "accent-green-600" : "accent-gray-400"
+                    }`}
+                  />
+                  <label htmlFor="showActive" className="text-green-700 font-semibold">
+                    Activos
+                  </label>
+                </div>
+                <div className="flex items-center gap-2 ">
+                  <input
+                    id="showInactive"
+                    type="checkbox"
+                    checked={showInactive}
+                    onChange={() => {
+                      setShowInactive(prev => !prev);
+                      if (showActive && !showInactive) setShowActive(false); // evita ambos marcados
+                    }}
+                    className={`w-5 h-5 rounded cursor-pointer border border-red-600 ${
+                      showInactive ? "accent-red-600" : "accent-gray-400"
+                    }`}
+                  />
+                  <label htmlFor="showInactive" className="text-green-700 font-semibold">
+                    Inactivos
+                  </label>
+                </div>
+              </div>
 
           {/* Filtros */}
           <div className="mt-6 flex flex-row flex-wrap gap-4 mb-6">
@@ -182,7 +282,7 @@ export default function BuscarUsuarios() {
                 className="w-full border border-green-600 rounded p-2 text-base focus:outline-none focus:ring-1 focus:ring-blue-500"
               />
             </div>
-            <div className="flex-1 min-w-[200px]">
+          <div className="flex-1 min-w-[200px]">
               <label className="block text-base text-green-700 font-bold mb-1">Tipo de Usuario</label>
               <select
                 name="userTypeId"
@@ -191,39 +291,11 @@ export default function BuscarUsuarios() {
                 className="w-full border border-green-600 rounded p-2 text-base focus:outline-none focus:ring-1 focus:ring-blue-500"
               >
                 <option value="">Todos</option>
-                <option value="1">ADMIN</option>
-                <option value="2">LOAN</option>
-                <option value="3">MED</option>
-                <option value="4">SALES</option>
+                <option value="admin">ADMIN</option>
+                <option value="client">CLIENT</option>
               </select>
             </div>
            </div>
-          
-          <div className="flex justify-end gap-4 mb-3">
-            <button
-              type="submit"
-              className="bg-green-600 font-bold text-white px-4 py-2 rounded hover:bg-green-700 transition"
-            >
-              BUSCAR
-            </button>
-
-             <button
-                type="button" 
-                className="bg-green-600 font-bold text-white px-4 py-2 rounded hover:bg-green-700 transition"
-                onClick={handleClick}
-                >
-                CREAR USUARIO 
-                </button>
-            {users.length > 0 && (
-              <button
-                type="button"
-                onClick={handlePrint}
-                className="bg-green-600 font-bold text-white px-4 py-2 rounded hover:bg-green-700 transition no-print"
-              >
-                IMPRIMIR
-              </button>
-            )}
-          </div>
 
           {/* Tabla */}
           <div ref={tableRef} className="mt-4 border border-green-500 rounded-lg shadow-md overflow-hidden p-2">
@@ -231,7 +303,6 @@ export default function BuscarUsuarios() {
               <table className="min-w-[700px] w-full">
                 <thead className="bg-green-600 text-white sticky top-0">
                   <tr>
-                    <th className="px-6 py-3 text-left text-sm font-semibold uppercase">Usuario</th>
                     <th className="px-6 py-3 text-left text-sm font-semibold uppercase">Nombre</th>
                     <th className="px-6 py-3 text-left text-sm font-semibold uppercase">Apellido</th>
                     <th className="px-6 py-3 text-left text-sm font-semibold uppercase">Correo</th>
@@ -248,12 +319,11 @@ export default function BuscarUsuarios() {
                   ) : paginatedUsers.length > 0 ? (
                     paginatedUsers.map(u => (
                       <tr key={u.userId} className="hover:bg-gray-200 transition">
-                        <td className="px-6 py-3 text-sm text-gray-800">{u.userName}</td>
                         <td className="px-6 py-3 text-sm text-gray-800">{u.firstName}</td>
                         <td className="px-6 py-3 text-sm text-gray-800">{u.lastName}</td>
                         <td className="px-6 py-3 text-sm text-gray-800">{u.email}</td>
-                        <td className="px-6 py-3 text-sm text-gray-800">{u.company}</td>
-                        <td className="px-6 py-3 text-sm text-gray-800">{userTypeName(u.userTypeId)}</td>
+                        <td className="px-6 py-3 text-sm text-gray-800">{u.company?.name}</td>
+                        <td className="px-6 py-3 text-sm text-gray-800">{u.appointmentUserType?.name}</td>
                         <td className="px-4 py-3 text-center no-print">
                           <Link
                             href={`/aplicaciones/usu/${u.userId}`}

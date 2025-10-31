@@ -3,6 +3,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { FaWpforms, FaSearch } from "react-icons/fa";
 import ScaleIn from "@/components/scaleIn";
+import { useEffect } from "react"
+import { useRouter } from "next/navigation";
 
 export default function SolicitudPrestamo() {
  

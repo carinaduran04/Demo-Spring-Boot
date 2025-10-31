@@ -5,6 +5,8 @@ import com.apis.drtg.apis_drtg.models.AppointmentCompany;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -21,7 +23,8 @@ import lombok.NoArgsConstructor;
 public class AppointmentUser {
 
     @Id
-    @Column(name="USER_ID")
+    @GeneratedValue(strategy = GenerationType.IDENTITY) 
+    @Column(name = "USER_ID")
     private int userId;
     
     @ManyToOne
@@ -33,9 +36,8 @@ public class AppointmentUser {
     private AppointmentUserType appointmentUserType;
 
     @ManyToOne
-    @JoinColumn(name="company_id")
+    @JoinColumn(name = "COMPANY_ID", referencedColumnName = "COMPANY_ID")
     private AppointmentCompany company;
-
 
     @Column(name="USER_NAME")
     private String userName;
@@ -72,6 +74,10 @@ public class AppointmentUser {
 
     @Column(name="LAST_UPDATE_DATE")
     private String lastUpdateDate;
+
+    @Column(name = "STATUS")
+    private String status;
+ 
 
     
 }
