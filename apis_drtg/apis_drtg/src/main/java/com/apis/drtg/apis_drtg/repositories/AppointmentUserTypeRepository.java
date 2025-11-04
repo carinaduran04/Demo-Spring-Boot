@@ -6,4 +6,5 @@ import com.apis.drtg.apis_drtg.models.user.AppointmentUserType;
 
 @Repository
 public interface AppointmentUserTypeRepository extends JpaRepository<AppointmentUserType, Integer> {
+    
 }
