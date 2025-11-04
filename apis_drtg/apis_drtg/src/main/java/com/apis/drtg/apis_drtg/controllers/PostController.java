@@ -148,11 +148,26 @@ public class PostController {
     }
 
     //  Login simple 
-    @PostMapping("/appointmentuser/login")
-    public ResponseEntity<?> loginUser(@RequestParam String userName, @RequestParam String password) {
-        Optional<AppointmentUser> user = appointmentUserRepository.findByUserNameAndPassword(userName, password);
-        return user.isPresent() ? ResponseEntity.ok(user.get()) : ResponseEntity.status(401).body("Credenciales inválidas");
+   @PostMapping("/appointmentuser/login")
+    public ResponseEntity<?> loginUser(
+        @RequestParam String userName,
+        @RequestParam String password) {
+    try {
+        Optional<AppointmentUser> user = appointmentUserRepository.findActiveByCredentials(userName, password);
+
+        if (user.isPresent()) {
+            return ResponseEntity.ok(user.get());
+        } else {
+            return ResponseEntity.status(401)
+                    .body("Usuario inactivo o credenciales inválidas");
+        }
+
+    } catch (Exception e) {
+        return ResponseEntity.status(500)
+                .body("Error al intentar iniciar sesión: " + e.getMessage());
     }
+}
+
 
     // Usuario con dirección 
     @GetMapping("/appointmentuser/{id}/address")

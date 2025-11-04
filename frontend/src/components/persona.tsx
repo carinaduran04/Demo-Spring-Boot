@@ -244,7 +244,7 @@
     <ScaleIn>
      <div className=" my-auto">
       <div className="max-w-6xl mx-auto p-6 bg-gray-100 border-2 border-green-600 rounded-xl shadow m-10">
-      <div className="flex gap-6 border-b pb-2 mb-2 text-lg font-bold text-gray-700">
+      <div className="flex gap-6 border-b pb-2 mb-4 text-lg font-bold text-gray-700">
         {visibleTabs.map((tab) => (
               <button
                 key={tab}
@@ -295,11 +295,7 @@
                     >
                       ELIMINAR
                     </button>
-                    <button
-                      type="button" className="bg-green-800 font-bold text-white px-4 py-2 text-sm rounded hover:bg-green-900" onClick={handleExit}
-                    >
-                      SALIR
-                    </button>
+                 
                   </>
                 ) : (
                   <>

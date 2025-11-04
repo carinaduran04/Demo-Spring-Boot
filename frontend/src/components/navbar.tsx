@@ -123,6 +123,7 @@ export default function Navbar() {
                 CREAR CITA
               </Link>
             </li>
+  
 
             {/* Solo visible si el usuario es admin */}
             {currentUser?.role === "admin" && (

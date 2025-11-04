@@ -19,6 +19,9 @@ public interface AppointmentUserRepository extends JpaRepository<AppointmentUser
     @Query("SELECT u FROM AppointmentUser u WHERE u.status = 'INACTIVE'")
     List<AppointmentUser> findInactiveUsers();
 
+    @Query("SELECT u FROM AppointmentUser u WHERE (u.userName = :userName OR u.email = :userName) AND u.password = :password AND u.status = 'ACTIVE'")
+    Optional<AppointmentUser> findActiveByCredentials(String userName, String password);
+
     // Buscar usuario por nombre y contraseña
     Optional<AppointmentUser> findByUserNameAndPassword(String userName, String password);
 

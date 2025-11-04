@@ -23,7 +23,7 @@ export default function SolicitudPrestamo() {
         </div>
  
             <div className="mb-5 flex justify-center">
-          <Link href="/" >
+          <Link href="/inicio" >
             <Image
               src="/logo13.png"
               alt="Logo de la aplicación"

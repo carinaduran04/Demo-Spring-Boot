@@ -78,6 +78,8 @@ public class AppointmentUser {
     @Column(name = "STATUS")
     private String status;
  
+    @Column(nullable = false)
+    private boolean active = true;
 
     
 }

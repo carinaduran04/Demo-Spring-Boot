@@ -4,6 +4,9 @@ import React, { useState, useEffect, useRef } from "react";
 import ScaleIn from "@/components/scaleIn";
 import { useRouter } from "next/navigation";
 import { useReactToPrint } from "react-to-print";
+import ModalWrapper from "@/components/ModalWrapper";
+import UsuarioVerMas from "@/components/UsuarioVerMas";
+
 
 interface Company {
   companyId: number;
@@ -46,9 +49,11 @@ export default function BuscarUsuarios() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-
-  const [showActive, setShowActive] = useState(false);
+  const [showUserModal, setShowUserModal] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
+  const [showActive, setShowActive] = useState(true);
   const [showInactive, setShowInactive] = useState(false);
+  const [currentUser, setCurrentUser] = useState<{ userName?: string } | null>(null);
 
   const [searchParams, setSearchParams] = useState<SearchParams>({
     firstName: "",
@@ -62,12 +67,25 @@ export default function BuscarUsuarios() {
   const rowsPerPage = 8;
   const tableRef = useRef<HTMLTableElement>(null);
 
-const handlePrint = useReactToPrint({
-  contentRef: tableRef,
-  documentTitle: "Usuarios registrados",
-  pageStyle: `
-   @media print {
-        body { font-size: 10px; }
+    // ✅ Obtener usuario actual del localStorage
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const storedUser = localStorage.getItem("user");
+      if (storedUser) {
+        try {
+          setCurrentUser(JSON.parse(storedUser));
+        } catch (e) {
+          console.error("Error al parsear usuario:", e);
+        }
+      }
+    }
+  }, []);
+
+  const handlePrint = useReactToPrint({
+    contentRef: tableRef,
+   pageStyle: `
+      @media print {
+        body { font-size: 10px; color: black; }
         .no-print { display: none !important; }
 
         table { width: 100% !important; border-collapse: collapse; }
@@ -76,8 +94,23 @@ const handlePrint = useReactToPrint({
         /* Column headers en verde */
         th { color: green !important; }
 
-        /* Título principal en verde */
-        .print-title { text-align: center; font-size: 18px; font-weight: bold; margin-bottom: 10px; color: green !important; }
+        /* Encabezado */
+        .print-header {
+          text-align: center;
+          margin-bottom: 10px;
+        }
+        .print-header img {
+          width: 80px;
+          height: auto;
+          margin-bottom: 5px;
+        }
+        .print-title {
+          font-size: 18px;
+          font-weight: bold;
+          color: green !important;
+          text-align: center;
+          margin-bottom: 10px;
+        }
       }
     `,
   });
@@ -99,6 +132,18 @@ const handlePrint = useReactToPrint({
     }
     fetchUsers();
   }, []);
+
+   useEffect(() => {
+    const filtered = allUsers.filter((u) => {
+      const status = u.status?.toLowerCase();
+      if (showActive && !showInactive) return status === "active";
+      if (!showActive && showInactive) return status === "inactive";
+      if (showActive && showInactive) return true; // muestra todos si ambos
+      return true;
+    });
+    setUsers(filtered);
+    setCurrentPage(1);
+  }, [showActive, showInactive, allUsers]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -166,6 +211,12 @@ const userTypeName = (id: number) => {
     router.push("/aplicaciones/crear_usuario"); 
   };
 
+  const handleOpenUserModal = (userId: number) => {
+  setSelectedUserId(userId);
+  setShowUserModal(true);
+};
+
+
   return (
     <ScaleIn>
       <div className="flex justify-center py-1 pt-8 px- p-35">
@@ -177,7 +228,7 @@ const userTypeName = (id: number) => {
              USUARIOS REGISTRADOS
           </h2>
 
-               <div className="flex justify-end gap-4 mb-2">
+             <div className="flex justify-end gap-4 mb-2">
             <button
               type="submit"
               className="bg-green-600 font-bold text-white px-4 py-2 rounded hover:bg-green-700 transition"
@@ -203,41 +254,43 @@ const userTypeName = (id: number) => {
             )}
           </div>
 
+       
+          {/* 🔹 Checkboxes activos/inactivos */}
           <div className="flex justify-end gap-6 mt-3">
-                <div className="flex items-center gap-2 ">
-                  <input
-                    id="showActive"
-                    type="checkbox"
-                    checked={showActive}
-                    onChange={() => {
-                      setShowActive(prev => !prev);
-                      if (showInactive && !showActive) setShowInactive(false); // evita ambos marcados
-                    }}
-                    className={`w-5 h-5 rounded cursor-pointer border border-green-600 ${
-                      showActive ? "accent-green-600" : "accent-gray-400"
-                    }`}
-                  />
-                  <label htmlFor="showActive" className="text-green-700 font-semibold">
-                    Activos
-                  </label>
-                </div>
-                <div className="flex items-center gap-2 ">
-                  <input
-                    id="showInactive"
-                    type="checkbox"
-                    checked={showInactive}
-                    onChange={() => {
-                      setShowInactive(prev => !prev);
-                      if (showActive && !showInactive) setShowActive(false); // evita ambos marcados
-                    }}
-                    className={`w-5 h-5 rounded cursor-pointer border border-red-600 ${
-                      showInactive ? "accent-red-600" : "accent-gray-400"
-                    }`}
-                  />
-                  <label htmlFor="showInactive" className="text-green-700 font-semibold">
-                    Inactivos
-                  </label>
-                </div>
+            <div className="flex items-center gap-2">
+              <input
+                id="showActive"
+                type="checkbox"
+                checked={showActive}
+                onChange={() => {
+                  setShowActive(true);
+                  setShowInactive(false);
+                }}
+                className={`w-5 h-5 rounded cursor-pointer border border-green-600 ${
+                  showActive ? "accent-green-600" : "accent-gray-400"
+                }`}
+              />
+              <label htmlFor="showActive" className="text-green-700 font-semibold">
+                Activos
+              </label>
+            </div>
+            <div className="flex items-center gap-2">
+              <input
+                id="showInactive"
+                type="checkbox"
+                checked={showInactive}
+                onChange={() => {
+                  setShowInactive(true);
+                  setShowActive(false);
+                }}
+                className={`w-5 h-5 rounded cursor-pointer border border-red-600 ${
+                  showInactive ? "accent-red-600" : "accent-gray-400"
+                }`}
+              />
+              <label htmlFor="showInactive" className="text-green-700 font-semibold">
+                Inactivos
+              </label>
+            </div>
               </div>
 
           {/* Filtros */}
@@ -298,7 +351,28 @@ const userTypeName = (id: number) => {
            </div>
 
           {/* Tabla */}
-          <div ref={tableRef} className="mt-4 border border-green-500 rounded-lg shadow-md overflow-hidden p-2">
+  {/* 🔹 Tabla con encabezado impreso */}
+          <div ref={tableRef} className="mt-4 border border-green-500 rounded-lg shadow-md overflow-hidden">
+            {/* Encabezado solo al imprimir */}
+           <div className="print-header hidden print:block text-center">
+              <img
+                src="/logo18.png"
+                alt="Logo de la empresa"
+                className="mx-auto mb-2"
+                style={{ width: "80px", height: "auto" }}
+              />
+              <h2 className="print-title">CITAS REGISTRADAS</h2>
+              <div className="print-info text-sm text-gray-700">
+                Impreso por: <strong>{currentUser?.userName || "Usuario desconocido"}</strong><br />
+                Fecha: {new Date().toLocaleString("es-DO")}
+              </div>
+            </div>
+                <div
+                  style={{
+                    borderTop: "2px solid #22c55e",
+                    margin: "10px 0",
+                  }}
+                ></div>
             <div className="max-h-[400px] overflow-y-auto">
               <table className="min-w-[700px] w-full">
                 <thead className="bg-green-600 text-white sticky top-0">
@@ -325,12 +399,13 @@ const userTypeName = (id: number) => {
                         <td className="px-6 py-3 text-sm text-gray-800">{u.company?.name}</td>
                         <td className="px-6 py-3 text-sm text-gray-800">{u.appointmentUserType?.name}</td>
                         <td className="px-4 py-3 text-center no-print">
-                          <Link
-                            href={`/aplicaciones/usu/${u.userId}`}
+                         <button
+                            onClick={() => handleOpenUserModal(u.userId)}
                             className="bg-green-600 font-bold text-white px-2 py-1 rounded text-sm hover:bg-green-700 transition"
+                            type="button"
                           >
                             VER MÁS
-                          </Link>
+                          </button>
                         </td>
                       </tr>
                     ))
@@ -373,6 +448,12 @@ const userTypeName = (id: number) => {
             </div>
           </div>
         </form>
+        <ModalWrapper
+          isOpen={showUserModal}
+          onClose={() => setShowUserModal(false)}
+        >
+          {selectedUserId && <UsuarioVerMas id={selectedUserId} />}
+        </ModalWrapper>
       </div>
     </ScaleIn>
   );

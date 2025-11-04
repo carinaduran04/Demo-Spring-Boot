@@ -2,6 +2,8 @@
 import Link from "next/link";
 import React, { useState, useEffect, useRef } from "react";
 import ScaleIn from "@/components/scaleIn";
+import ModalWrapper from "@/components/ModalWrapper";
+import PersonForm from "@/components/persona";
 import Image from "next/image";
 import { useReactToPrint } from "react-to-print";
 
@@ -52,6 +54,8 @@ export default function SolicitudPrestamo() {
   const [showActive, setShowActive] = useState(true);
   const [showInactive, setShowInactive] = useState(false);
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const [showModal, setShowModal] = useState(false);
+  const [selectedData, setSelectedData] = useState<Appointment | null>(null);
   const [searchParams, setSearchParams] = useState<SearchParams>({
     firstName: "",
     lastName: "",
@@ -73,8 +77,7 @@ export default function SolicitudPrestamo() {
 
   const handlePrint = useReactToPrint({
     contentRef: tableRef,
-    documentTitle: "CITAS REGISTRADAS",
-    pageStyle: `
+   pageStyle: `
       @media print {
         body { font-size: 10px; color: black; }
         .no-print { display: none !important; }
@@ -105,6 +108,7 @@ export default function SolicitudPrestamo() {
       }
     `,
   });
+
 
    useEffect(() => {
     if (typeof window !== "undefined") {
@@ -223,6 +227,23 @@ export default function SolicitudPrestamo() {
       .replace(",", ""); 
   }
 
+  const handleVerMas = (appointment: Appointment) => {
+    setSelectedData({
+      id: appointment.appointmentDtlId,
+      nombre: appointment.firstName,
+      apellidos: appointment.lastName,
+      telefono: appointment.phone,
+      email: appointment.email,
+      direccion: appointment.appointmentAddress?.address,
+      ciudad: appointment.appointmentAddress?.city,
+      tipoConsulta: appointment.consultingType,
+      fechaConsulta: appointment.consultingDate,
+      activo: appointment.status === "ACTIVE",
+    } as any);
+    setShowModal(true);
+  };
+
+
   //  Paginación
   const totalPages = Math.ceil(appointments.length / rowsPerPage);
   const startIndex = (currentPage - 1) * rowsPerPage;
@@ -231,17 +252,16 @@ export default function SolicitudPrestamo() {
  
   return (
     <ScaleIn>
-      <div className="flex justify-center py-1 pt-8 px-50">
+      <div className="flex justify-center py-1 pt-8 px- p-35">
         <form
           onSubmit={handleSearch}
-          className="bg-gray-100 border border-green-600 p-6 rounded-xl shadow-md  w-full max-w-[110%] mx-auto flex flex-col min-h-[50vh]"
+          className="bg-gray-100 border border-green-600 p-8 rounded-xl shadow-md w-full max-w-8xl flex flex-col min-h-[70vh]"
         >
-          <h2 className="print-title text-4xl text-green-700 font-semibold text-center mb-2 no.print">
+          <h2 className="print-title text-3xl text-green-700 font-semibold text-center mb-4">
             HAZ TU CONSULTA
           </h2>
          
-          <div className="col-span-12 flex flex-col items-end pt-0">
-            <div className="flex gap-4 mb-4">
+            <div className="flex justify-end flex-wrap gap-3 mb-3">
               <button
                 type="submit"
                 className="bg-green-600 font-bold text-white px-4 py-2 text-3x1 rounded hover:bg-green-700 transition"
@@ -260,7 +280,7 @@ export default function SolicitudPrestamo() {
               )}
             </div>
             
-            <div className="flex flex-row gap-6 mt-3">
+            <div className="flex justify-end gap-6 mt-3">
               <div className="flex items-center gap-2">
                 <input
                   id="showActive"
@@ -295,89 +315,129 @@ export default function SolicitudPrestamo() {
                 </label>
               </div>
             </div>
-          </div>
+      
 
           {/*  búsqueda */}
-          <div className="mt-6 flex flex-row flex-wrap gap-4 mb-6">
+       <div className="mt-6 flex flex-nowrap gap-4 mb-6 overflow-x-auto">
+          <div className="flex-none w-[180px]">
+            <label className="block text-base text-green-700 font-bold mb-1">Nombre</label>
+            <input
+              type="text"
+              name="firstName"
+              value={searchParams.firstName}
+              onChange={handleChange}
+              placeholder="Nombre"
+              className="w-full border border-green-600 rounded p-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+            />
+          </div>
 
-            <div className="flex-1 min-w-[120px] max-w-[200px]">
-              <label className="block text-base text-green-700 font-bold mb-1"> Nombre </label>
-              <input type="text" name="firstName" value={searchParams.firstName} onChange={handleChange} placeholder="Ingrese el nombre"
-                className="w-full border border-green-600 rounded p-2 text-2x1 focus:outline-none focus:ring-1 focus:ring-blue-500" />
-            </div>
+          <div className="flex-none w-[180px]">
+            <label className="block text-base text-green-700 font-bold mb-1">Apellido</label>
+            <input
+              type="text"
+              name="lastName"
+              value={searchParams.lastName}
+              onChange={handleChange}
+              placeholder="Apellido"
+              className="w-full border border-green-600 rounded p-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+            />
+          </div>
 
-            <div className="flex-1 min-w-[120px] max-w-[200px]">
-              <label className="block text-base text-green-700 font-bold mb-1"> Apellido </label>
-              <input type="text" name="lastName" value={searchParams.lastName} onChange={handleChange} placeholder="Ingrese el apellido"
-                className="w-full border border-green-600 rounded p-2 text-2x1 focus:outline-none focus:ring-1 focus:ring-blue-500" />
-            </div>
+          <div className="flex-none w-[180px]">
+            <label className="block text-base text-green-700 font-bold mb-1">Dirección</label>
+            <input
+              type="text"
+              name="direccion"
+              value={searchParams.direccion}
+              onChange={handleChange}
+              placeholder="Dirección"
+              className="w-full border border-green-600 rounded p-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+            />
+          </div>
 
-            <div className="flex-1 min-w-[120px] max-w-[200px]">
-              <label className="block text-base text-green-700 font-bold mb-1"> Dirección </label>
-              <input type="text" name="direccion" value={searchParams.direccion} onChange={handleChange} placeholder="Ingrese la dirección"
-                className="w-full border border-green-600 rounded p-2 text-2x1 focus:outline-none focus:ring-1 focus:ring-blue-500" />
-            </div>
+          <div className="flex-none w-[180px]">
+            <label className="block text-base text-green-700 font-bold mb-1">E-Mail</label>
+            <input
+              type="text"
+              name="email"
+              value={searchParams.email}
+              onChange={handleChange}
+              placeholder="Correo"
+              className="w-full border border-green-600 rounded p-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+            />
+          </div>
 
-            <div className="flex-1 min-w-[120px] max-w-[200px]">
-              <label className="block text-base text-green-700 font-bold mb-1"> E-Mail </label>
-              <input type="text" name="email" value={searchParams.email} onChange={handleChange} placeholder="Ingrese el E-Mail"
-                className="w-full border border-green-600 rounded p-2 text-2x1 focus:outline-none focus:ring-1 focus:ring-blue-500" />
-            </div>
+          <div className="flex-none w-[180px]">
+            <label className="block text-base text-green-700 font-bold mb-1">Teléfono</label>
+            <input
+              type="text"
+              name="phone"
+              value={searchParams.phone}
+              onChange={handleChange}
+              placeholder="Teléfono"
+              className="w-full border border-green-600 rounded p-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+            />
+          </div>
 
-            <div className="flex-1 min-w-[120px] max-w-[200px]">
-              <label className="block text-base text-green-700 font-bold mb-1"> Teléfono </label>
-              <input type="text" name="phone" value={searchParams.phone} onChange={handleChange} placeholder="Ingrese el teléfono" 
-                className="w-full border border-green-600 rounded p-2 text-2x1 focus:outline-none focus:ring-1 focus:ring-blue-500" />
-            </div>
+          <div className="flex-none w-[200px]">
+            <label className="block text-base text-green-700 font-bold mb-1">Tipo de Cita</label>
+            <input
+              type="text"
+              name="consultingType"
+              value={searchParams.consultingType}
+              onChange={handleChange}
+              placeholder="Tipo de Cita"
+              className="w-full border border-green-600 rounded p-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+            />
+          </div>
 
-            <div className="flex-1 min-w-[120px] max-w-[200px]">
-              <label className="block text-base text-green-700 font-bold mb-1"> Tipo de Cita </label>
-              <input type="text" name="consultingType" value={searchParams.consultingType} onChange={handleChange} placeholder="Ingrese el tipo de cita"
-                className="w-full border border-green-600 rounded p-2 text-2x1 focus:outline-none focus:ring-1 focus:ring-blue-500" />
-            </div>
-            {/*
-            <div className="flex-1 min-w-[200px]">
-              <label className="block text-base text-green-700 font-bold mb-1"> Fecha de la Cita </label>
-              <input type="date" name="fecha" value={searchParams.fecha} onChange={handleChange} placeholder="Ingrese la fecha de cita"
-                className="w-full border border-green-600 rounded p-2 text-2x1 focus:outline-none focus:ring-1 focus:ring-blue-500" />
-            </div>
-            */}
-
-             <div className="flex-1 min-w-[120px] max-w-[200px]">
-              <label className="block text-base text-green-700 font-bold mb-1">
-                Rango de Fechas
-              </label>
-              <div className="flex gap-2">
-                <input
-                  type="date"
-                  name="fechaInicio"
-                  value={searchParams.fechaInicio || ""}
-                  onChange={handleChange}
-                  className="w-full border border-green-600 rounded p-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                />
-                <span className="text-green-700 font-bold">-</span>
-                <input
-                  type="date"
-                  name="fechaFin"
-                  value={searchParams.fechaFin || ""}
-                  onChange={handleChange}
-                  className="w-full border border-green-600 rounded p-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                />
-              </div>
-           </div>
-         </div>
-          
+          {/* 🔹 Rango de Fechas */}
+          <div className="flex-1 min-w-[200px] max-w-full">
+          <label className="block text-base text-green-700 font-bold mb-1">
+            Rango de fecha  
+          </label>
+          <div className="flex flex-wrap items-center gap-2 w-full">
+            <input
+              type="date"
+              name="fechaInicio"
+              value={searchParams.fechaInicio || ""}
+              onChange={handleChange}
+              className="flex-1 min-w-[150px] border border-green-600 rounded p-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+            />
+            <span className="text-green-700 font-bold text-center">-</span>
+            <input
+              type="date"
+              name="fechaFin"
+              value={searchParams.fechaFin || ""}
+              onChange={handleChange}
+              className="flex-1 min-w-[100px] border border-green-600 rounded p-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+            />
+          </div>
+        </div>
+      </div>
 
          {/* 🔹 Tabla con encabezado impreso */}
           <div ref={tableRef} className="mt-4 border border-green-500 rounded-lg shadow-md overflow-hidden">
             {/* Encabezado solo al imprimir */}
-            <div className="print-header hidden print:block">
+           <div className="print-header hidden print:block text-center">
               <img
-                src={currentUser?.company?.logoUrl || "/logo18.png"} // <- logo dinámico
-                alt={currentUser?.company?.name || "Logo Cliente"}
+                src="/logo18.png"
+                alt="Logo de la empresa"
+                className="mx-auto mb-2"
+                style={{ width: "80px", height: "auto" }}
               />
               <h2 className="print-title">CITAS REGISTRADAS</h2>
+              <div className="print-info text-sm text-gray-700">
+                Impreso por: <strong>{currentUser?.userName || "Usuario desconocido"}</strong><br />
+                Fecha: {new Date().toLocaleString("es-DO")}
+              </div>
             </div>
+                <div
+                  style={{
+                    borderTop: "2px solid #22c55e",
+                    margin: "10px 0",
+                  }}
+                ></div>
             <div className="max-h-[300px] overflow-y-auto" >   
               <table className="min-w-[900px] w-full">
                 <thead className="bg-green-600 text-white sticky top-0">
@@ -431,14 +491,15 @@ export default function SolicitudPrestamo() {
                         {isAdmin && (
                           <td className="px-6 py-4 text-sm text-gray-800"> {a.userId?.userName} </td>
                         )}
-                        <td className="px-4 py-4 text-center no-print">
-                          <Link
-                            href={`/aplicaciones/persona/${a.appointmentDtlId}`}
-                            className="bg-green-600 font-bold text-white px-2 py-1 rounded-md text-sm shadow-md hover:bg-green-700 transition inline-block"
-                          >
-                            VER MAS
-                          </Link>
-                        </td>
+                      <td className="px-4 py-4 text-center no-print">
+                        <button
+                          type="button"
+                          onClick={() => handleVerMas(a)}
+                          className="bg-green-600 font-bold text-white px-2 py-1 rounded-md text-sm shadow-md hover:bg-green-700 transition"
+                        >
+                          VER MÁS
+                        </button>
+                      </td>
                       </tr>
                     ))
                   ) : (
@@ -491,6 +552,10 @@ export default function SolicitudPrestamo() {
             </div>
           </div>
         </form>
+         {/* 🔹 Modal para VER MÁS */}
+      <ModalWrapper isOpen={showModal} onClose={() => setShowModal(false)}>
+        <PersonForm data={selectedData || {}} />
+      </ModalWrapper>
       </div>
     </ScaleIn>
   );
