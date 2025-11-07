@@ -44,6 +44,7 @@ interface SearchParams {
   fecha: string;
   fechaInicio: string,
   fechaFin: string,
+  ownerName?: string; 
 }
 
 export default function SolicitudPrestamo() {
@@ -56,6 +57,7 @@ export default function SolicitudPrestamo() {
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [showModal, setShowModal] = useState(false);
   const [selectedData, setSelectedData] = useState<Appointment | null>(null);
+  const [owners, setOwners] = useState<Usuario[]>([]); 
   const [searchParams, setSearchParams] = useState<SearchParams>({
     firstName: "",
     lastName: "",
@@ -66,6 +68,7 @@ export default function SolicitudPrestamo() {
     fecha: "",
     fechaInicio: "",
     fechaFin: "",
+    ownerName: "",
   });
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -109,8 +112,7 @@ export default function SolicitudPrestamo() {
     `,
   });
 
-
-   useEffect(() => {
+useEffect(() => {
     if (typeof window !== "undefined") {
       const storedUser = localStorage.getItem("user");
       if (storedUser) {
@@ -154,11 +156,27 @@ export default function SolicitudPrestamo() {
     }
 
     fetchAllAppointments();
-
     return () => {
       cancelled = true;
     };
   }, [currentUser, isAdmin]);
+
+  // Nuevo useEffect para cargar dueños
+useEffect(() => {
+  async function fetchOwners() {
+    try {
+      const res = await fetch("/api/appointmentuser/all");
+      if (!res.ok) throw new Error("Error al cargar usuarios");
+      const data: Usuario[] = await res.json();
+      console.log("Usuarios cargados:", data);
+      setOwners(data);
+    } catch (error) {
+      console.error("Error cargando dueños:", error);
+    }
+  }
+
+  fetchOwners();
+}, []);
 
   useEffect(() => {
     const filtered = allAppointments.filter(a => {
@@ -170,49 +188,58 @@ export default function SolicitudPrestamo() {
     setAppointments(filtered);
   }, [showActive, showInactive, allAppointments]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setSearchParams(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    const filteredAppointments = allAppointments.filter(a => {
-      const status = a.status?.toLowerCase();
-      if (!showActive && status === "active") return false;
-      if (!showInactive && status !== "active") return false;
+  const filteredAppointments = allAppointments.filter(a => {
+    const status = a.status?.toLowerCase();
 
+    // Filtro por estado
+    const isActive = status === "active";
+    if (showActive && !isActive) return false;
+    if (showInactive && isActive) return false;
+
+    // Filtro por dueño
+    if (searchParams.ownerName && 
+        a.userId?.userName?.toLowerCase() !== searchParams.ownerName.toLowerCase()) {
+      return false;
+    }
+
+    // Filtro por rango de fechas
     const citaDate = new Date(a.consultingDate);
     const desde = searchParams.fechaInicio ? new Date(searchParams.fechaInicio) : null;
     const hasta = searchParams.fechaFin ? new Date(searchParams.fechaFin) : null;
-   
+
     if (desde && hasta && desde.getTime() === hasta.getTime()) {
       const citaString = citaDate.toISOString().split("T")[0];
       const desdeString = desde.toISOString().split("T")[0];
-      return citaString === desdeString;
+      if (citaString !== desdeString) return false;
     }
 
     if (desde && citaDate < desde) return false;
     if (hasta && citaDate > hasta) return false;
-
-
       const matches =
-    (!searchParams.firstName || a.firstName.toLowerCase().startsWith(searchParams.firstName.toLowerCase())) &&
-    (!searchParams.lastName || a.lastName.toLowerCase().startsWith(searchParams.lastName.toLowerCase())) &&
-    (!searchParams.email || a.email.toLowerCase().startsWith(searchParams.email.toLowerCase())) &&
-    (!searchParams.phone || a.phone.toLowerCase().startsWith(searchParams.phone.toLowerCase())) &&
-    (!searchParams.consultingType || a.consultingType.toLowerCase().startsWith(searchParams.consultingType.toLowerCase())) &&
-    (!searchParams.direccion || a.appointmentAddress?.address.toLowerCase().startsWith(searchParams.direccion.toLowerCase()));
+        (!searchParams.firstName || a.firstName.toLowerCase().startsWith(searchParams.firstName.toLowerCase())) &&
+        (!searchParams.lastName || a.lastName.toLowerCase().startsWith(searchParams.lastName.toLowerCase())) &&
+        (!searchParams.email || a.email.toLowerCase().startsWith(searchParams.email.toLowerCase())) &&
+        (!searchParams.phone || a.phone.toLowerCase().startsWith(searchParams.phone.toLowerCase())) &&
+        (!searchParams.consultingType || a.consultingType.toLowerCase().startsWith(searchParams.consultingType.toLowerCase())) &&
+        (!searchParams.direccion || a.appointmentAddress?.address.toLowerCase().startsWith(searchParams.direccion.toLowerCase())) &&
+        (!searchParams.ownerName || a.userId?.userName?.toLowerCase().includes(searchParams.ownerName.toLowerCase()));
 
-  return matches;
-});
+      return matches;
+    });
 
     setAppointments(filteredAppointments);
     setCurrentPage(1);
   };
 
-   function formatDateTime(dateString: string) {
+  function formatDateTime(dateString: string) {
     if (!dateString) return "";
     const date = new Date(dateString);
     return date
@@ -243,8 +270,6 @@ export default function SolicitudPrestamo() {
     setShowModal(true);
   };
 
-
-  //  Paginación
   const totalPages = Math.ceil(appointments.length / rowsPerPage);
   const startIndex = (currentPage - 1) * rowsPerPage;
   const endIndex = startIndex + rowsPerPage;
@@ -315,110 +340,141 @@ export default function SolicitudPrestamo() {
                 </label>
               </div>
             </div>
-      
 
           {/*  búsqueda */}
-       <div className="mt-6 flex flex-nowrap gap-4 mb-6 overflow-x-auto">
-          <div className="flex-none w-[180px]">
-            <label className="block text-base text-green-700 font-bold mb-1">Nombre</label>
-            <input
-              type="text"
-              name="firstName"
-              value={searchParams.firstName}
-              onChange={handleChange}
-              placeholder="Nombre"
-              className="w-full border border-green-600 rounded p-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-            />
+        <div className="mt-6 flex flex-nowrap gap-4 mb-6 overflow-x-auto">
+            <div className="flex-none w-[180px]">
+              <label className="block text-base text-green-700 font-bold mb-1">
+                Nombre
+              </label>
+              <input
+                type="text"
+                name="firstName"
+                value={searchParams.firstName}
+                onChange={handleChange}
+                placeholder="Nombre"
+                className="w-full border border-green-600 rounded p-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+              />
+            </div>
+
+            <div className="flex-none w-[180px]">
+              <label className="block text-base text-green-700 font-bold mb-1">
+                Apellido
+              </label>
+              <input
+                type="text"
+                name="lastName"
+                value={searchParams.lastName}
+                onChange={handleChange}
+                placeholder="Apellido"
+                className="w-full border border-green-600 rounded p-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+              />
+            </div>
+
+            <div className="flex-none w-[180px]">
+              <label className="block text-base text-green-700 font-bold mb-1">
+                Dirección
+              </label>
+              <input
+                type="text"
+                name="direccion"
+                value={searchParams.direccion}
+                onChange={handleChange}
+                placeholder="Dirección"
+                className="w-full border border-green-600 rounded p-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+              />
+            </div>
+
+            <div className="flex-none w-[180px]">
+              <label className="block text-base text-green-700 font-bold mb-1">
+                E-Mail
+              </label>
+              <input
+                type="text"
+                name="email"
+                value={searchParams.email}
+                onChange={handleChange}
+                placeholder="Correo"
+                className="w-full border border-green-600 rounded p-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+              />
+            </div>
+
+            <div className="flex-none w-[180px]">
+              <label className="block text-base text-green-700 font-bold mb-1">
+                Teléfono
+              </label>
+              <input
+                type="text"
+                name="phone"
+                value={searchParams.phone}
+                onChange={handleChange}
+                placeholder="Teléfono"
+                className="w-full border border-green-600 rounded p-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+              />
+            </div>
+
+            <div className="flex-none w-[200px]">
+              <label className="block text-base text-green-700 font-bold mb-1">
+                Tipo de Cita
+              </label>
+              <input
+                type="text"
+                name="consultingType"
+                value={searchParams.consultingType}
+                onChange={handleChange}
+                placeholder="Tipo de Cita"
+                className="w-full border border-green-600 rounded p-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+              />
+            </div>
+
+            {isAdmin && (
+              <div className="flex-none w-[200px]">
+                <label className="block text-base text-green-700 font-bold mb-1">
+                 Propietario
+                </label>
+                <select
+                  name="ownerName"
+                  value={searchParams.ownerName || ""}
+                  onChange={handleChange}
+                  className="w-full border border-green-600 rounded p-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white"
+                >
+                  <option value="">Seleccionar dueño</option>
+                  {owners.map((owner) => (
+                    <option key={owner.userId} value={owner.userName}>
+                      {owner.userName}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {/* Rango de Fechas */}
+            <div className="flex-1 min-w-[200px] max-w-full">
+              <label className="block text-base text-green-700 font-bold mb-1">
+                Rango de fecha
+              </label>
+              <div className="flex flex-wrap items-center gap-2 w-full">
+                <input
+                  type="date"
+                  name="fechaInicio"
+                  value={searchParams.fechaInicio || ""}
+                  onChange={handleChange}
+                  className="flex-1 min-w-[150px] border border-green-600 rounded p-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                />
+                <span className="text-green-700 font-bold text-center">-</span>
+                <input
+                  type="date"
+                  name="fechaFin"
+                  value={searchParams.fechaFin || ""}
+                  onChange={handleChange}
+                  className="flex-1 min-w-[100px] border border-green-600 rounded p-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                />
+              </div>
+            </div>
           </div>
 
-          <div className="flex-none w-[180px]">
-            <label className="block text-base text-green-700 font-bold mb-1">Apellido</label>
-            <input
-              type="text"
-              name="lastName"
-              value={searchParams.lastName}
-              onChange={handleChange}
-              placeholder="Apellido"
-              className="w-full border border-green-600 rounded p-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-            />
-          </div>
-
-          <div className="flex-none w-[180px]">
-            <label className="block text-base text-green-700 font-bold mb-1">Dirección</label>
-            <input
-              type="text"
-              name="direccion"
-              value={searchParams.direccion}
-              onChange={handleChange}
-              placeholder="Dirección"
-              className="w-full border border-green-600 rounded p-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-            />
-          </div>
-
-          <div className="flex-none w-[180px]">
-            <label className="block text-base text-green-700 font-bold mb-1">E-Mail</label>
-            <input
-              type="text"
-              name="email"
-              value={searchParams.email}
-              onChange={handleChange}
-              placeholder="Correo"
-              className="w-full border border-green-600 rounded p-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-            />
-          </div>
-
-          <div className="flex-none w-[180px]">
-            <label className="block text-base text-green-700 font-bold mb-1">Teléfono</label>
-            <input
-              type="text"
-              name="phone"
-              value={searchParams.phone}
-              onChange={handleChange}
-              placeholder="Teléfono"
-              className="w-full border border-green-600 rounded p-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-            />
-          </div>
-
-          <div className="flex-none w-[200px]">
-            <label className="block text-base text-green-700 font-bold mb-1">Tipo de Cita</label>
-            <input
-              type="text"
-              name="consultingType"
-              value={searchParams.consultingType}
-              onChange={handleChange}
-              placeholder="Tipo de Cita"
-              className="w-full border border-green-600 rounded p-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-            />
-          </div>
-
-          {/* 🔹 Rango de Fechas */}
-          <div className="flex-1 min-w-[200px] max-w-full">
-          <label className="block text-base text-green-700 font-bold mb-1">
-            Rango de fecha  
-          </label>
-          <div className="flex flex-wrap items-center gap-2 w-full">
-            <input
-              type="date"
-              name="fechaInicio"
-              value={searchParams.fechaInicio || ""}
-              onChange={handleChange}
-              className="flex-1 min-w-[150px] border border-green-600 rounded p-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-            />
-            <span className="text-green-700 font-bold text-center">-</span>
-            <input
-              type="date"
-              name="fechaFin"
-              value={searchParams.fechaFin || ""}
-              onChange={handleChange}
-              className="flex-1 min-w-[100px] border border-green-600 rounded p-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-            />
-          </div>
-        </div>
-      </div>
-
-         {/* 🔹 Tabla con encabezado impreso */}
+         {/* Tabla */}
           <div ref={tableRef} className="mt-4 border border-green-500 rounded-lg shadow-md overflow-hidden">
-            {/* Encabezado solo al imprimir */}
            <div className="print-header hidden print:block text-center">
               <img
                 src="/logo18.png"
@@ -552,7 +608,7 @@ export default function SolicitudPrestamo() {
             </div>
           </div>
         </form>
-         {/* 🔹 Modal para VER MÁS */}
+         {/* Modal para VER MÁS */}
       <ModalWrapper isOpen={showModal} onClose={() => setShowModal(false)}>
         <PersonForm data={selectedData || {}} />
       </ModalWrapper>

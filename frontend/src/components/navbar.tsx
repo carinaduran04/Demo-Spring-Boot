@@ -28,30 +28,57 @@ export default function Navbar() {
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
 
-    if (storedUser) {
-      const parsed = JSON.parse(storedUser);
-      setCurrentUser(parsed);
-      setUserName(parsed.fullName || parsed.userName);
-      setAddress(parsed.address || "Dirección no disponible");
+   if (storedUser) {
+    const parsed = JSON.parse(storedUser);
+    console.log("🧩 Usuario en localStorage:", parsed);
+
+    let user = null;
+
+    if (Array.isArray(parsed)) {
+      user = parsed.find(u => u.active === true) || parsed[0];
+    } else {
+      user = parsed;
+    }
+
+    if (!user) return;
+
+    console.log("✅ Usuario activo:", user);
+    console.log("🏠 Dirección:", user.address);
+
+    setCurrentUser(user);
+    setUserName(user.fullName || user.userName || "Usuario");
+
+    if (user.address) {
+      const direccion = user.address.address || "";
+      const ciudad = user.address.city || "";
+      setAddress(
+        direccion && ciudad
+          ? `${direccion}, ${ciudad}`
+          : direccion || "Dirección no disponible"
+      );
+    } else {
+      setAddress("Dirección no disponible");
+    }
 
       const email = parsed.username?.toLowerCase() || "";
 
-      // 🔹 Aquí se define qué logo y texto mostrar según el usuario
-      if (parsed.role === "admin") {
-        setLogoActivo("/logo18.png");
-        setUserText({ line1: "Bienvenido a la plataforma" });
-      } else if (email.includes("eddy")) {
-        setLogoActivo("/eddylo.png");
-        setUserText({ line1: "ARQUITECTO EDDY LOPEZ" });
-      } else if (email.includes("caro")) {
-        setLogoActivo("/carooo.png");
-        setUserText({ line1: "CAROLINA VENDE" });
-      }
+      // Aquí se define qué logo y texto mostrar según el usuario
+    if (user.appointmentUserType?.name === "ADMIN") {
+      setLogoActivo("/logo18.png");
+      setUserText({ line1: "Bienvenido a la plataforma" });
+    } else if (email.includes("eddy")) {
+      setLogoActivo("/eddylo.png");
+      setUserText({ line1: "ARQUITECTO EDDY LOPEZ" });
+    } else if (email.includes("caro")) {
+      setLogoActivo("/carooo.png");
+      setUserText({ line1: "CAROLINA VENDE" });
     }
-  }, []);
+  }
+}, []);
 
   const handleLogout = () => {
     localStorage.removeItem("user");
+    sessionStorage.removeItem("nav"); // ⬅️ se borra la navegación válida
     setUserName("");
     window.location.href = "/login";
   };
@@ -85,7 +112,9 @@ export default function Navbar() {
               )}
 
               {/* Dirección */}
-              <p className="text-xs text-white opacity-90">{address}</p>
+              {address && (
+                <p className="text-xs text-white opacity-90">{address}</p>
+              )}
             </div>
           </div>
 
@@ -168,10 +197,12 @@ export default function Navbar() {
                 </button>
               </>
             ) : (
+              
               <Link
                 href="/login"
-                className="bg-white text-green-600 px-3 py-1 rounded text-sm font-bold"
+               
               />
+              
             )}
           </div>
         </div>

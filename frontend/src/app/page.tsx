@@ -6,7 +6,7 @@ export default function Home() {
   const router = useRouter();
 
   useEffect(() => {
-    router.replace("/login"); // Redirige al login al abrir la raíz
+    router.replace("/login"); 
   }, [router]);
 
   return null;

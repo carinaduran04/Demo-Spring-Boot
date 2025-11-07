@@ -90,20 +90,24 @@ export default function Login() {
       console.log("Usuario logueado:", validUser);
      
       // Guardar datos del usuario
-      localStorage.setItem(
-        "user",
-        JSON.stringify({
-          id: validUser.id,
-          username: validUser.name,
-          userName: validUser.fullName || validUser.name,
-          fullName: validUser.fullName,
-          role: validUser.role,
-          address: validUser.address,
-          userTypeId: validUser.userTypeId,
-          
-        })
-      );
-     sessionStorage.setItem("session", "active");
+     const originalUser = data.find(u => u.userId === validUser.id);
+
+if (typeof window !== "undefined") {
+  localStorage.setItem(
+    "user",
+    JSON.stringify({
+      id: validUser.id,
+      username: validUser.name,
+      userName: validUser.fullName || validUser.name,
+      fullName: validUser.fullName,
+      role: validUser.role,
+      address: originalUser?.address || null,
+      userTypeId: validUser.userTypeId,
+      active: validUser.active,
+    })
+  );
+  sessionStorage.setItem("session", "active");
+}
 
       // Redirigir según tipo de usuario
       if (validUser.role === "admin") {

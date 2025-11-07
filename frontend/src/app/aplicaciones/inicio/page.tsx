@@ -23,7 +23,6 @@ export default function SolicitudPrestamo() {
         </div>
  
             <div className="mb-5 flex justify-center">
-          <Link href="/inicio" >
             <Image
               src="/logo13.png"
               alt="Logo de la aplicación"
@@ -31,7 +30,7 @@ export default function SolicitudPrestamo() {
               height={120}
               className="rounded-md shadow-md cursor-pointer"
             />
-          </Link>
+         
     
         </div>
       </section>

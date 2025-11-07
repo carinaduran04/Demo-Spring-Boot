@@ -9,7 +9,7 @@ interface ModalWrapperProps {
 }
 
 export default function ModalWrapper({ isOpen, onClose, children }: ModalWrapperProps) {
-  // Cierra al presionar "ESC"
+  
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
@@ -23,11 +23,11 @@ export default function ModalWrapper({ isOpen, onClose, children }: ModalWrapper
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-white/80 backdrop-blur-sm"
-      onClick={onClose} // cierra al hacer click fuera del contenido
+      onClick={onClose}
     >
       <div
         className="relative bg-gray-100 border-2 border-green-600 rounded-2xl shadow-2xl max-w-6xl w-[95%] max-h-[95vh] overflow-y-auto p-6 animate-fadeIn"
-        onClick={(e) => e.stopPropagation()} // evita cerrar al hacer click dentro
+        onClick={(e) => e.stopPropagation()} 
       >
         <button
           onClick={onClose}

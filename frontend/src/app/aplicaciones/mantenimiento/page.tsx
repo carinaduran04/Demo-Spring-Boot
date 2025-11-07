@@ -254,8 +254,6 @@ const userTypeName = (id: number) => {
             )}
           </div>
 
-       
-          {/* 🔹 Checkboxes activos/inactivos */}
           <div className="flex justify-end gap-6 mt-3">
             <div className="flex items-center gap-2">
               <input
@@ -350,8 +348,7 @@ const userTypeName = (id: number) => {
             </div>
            </div>
 
-          {/* Tabla */}
-  {/* 🔹 Tabla con encabezado impreso */}
+ 
           <div ref={tableRef} className="mt-4 border border-green-500 rounded-lg shadow-md overflow-hidden">
             {/* Encabezado solo al imprimir */}
            <div className="print-header hidden print:block text-center">
