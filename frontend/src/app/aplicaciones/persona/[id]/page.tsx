@@ -3,7 +3,7 @@
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import PersonForm from '@/components/persona';
-
+ import ModalWrapper from '@/components/ModalWrapper';
 
 interface PersonData {
   id?: number; 
@@ -43,6 +43,7 @@ export default function PersonaDetalle() {
   const [data, setData] = useState<PersonData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+ const [isModalOpen, setIsModalOpen] = useState(true); // O controla cuándo abrir
 
   useEffect(() => {
     async function fetchPerson() {
@@ -97,8 +98,13 @@ export default function PersonaDetalle() {
   if (error) return <div className="mt-20 p-4 text-center text-red-500">{error}</div>;
   if (!data) return <div className="mt-20 p-4 text-center">No se encontró la persona</div>;
   return (
+    
     <div className="10 p-4"> 
-      <PersonForm data={data} />
+      <PersonForm data={data}
+       />
     </div>
+
+    
   );
+  
 }

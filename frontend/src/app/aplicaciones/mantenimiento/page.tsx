@@ -67,7 +67,6 @@ export default function BuscarUsuarios() {
   const rowsPerPage = 8;
   const tableRef = useRef<HTMLTableElement>(null);
 
-    // ✅ Obtener usuario actual del localStorage
   useEffect(() => {
     if (typeof window !== "undefined") {
       const storedUser = localStorage.getItem("user");
@@ -115,30 +114,34 @@ export default function BuscarUsuarios() {
     `,
   });
 
-  useEffect(() => {
-    async function fetchUsers() {
-      try {
-        const res = await fetch("/api/appointmentuser/all");
-        if (!res.ok) throw new Error(`HTTP error! ${res.status}`);
-        const data: Usuario[] = await res.json();
-        setAllUsers(data);
-        setUsers(data);
-      } catch (err) {
-        console.error(err);
-        setError("Error al cargar usuarios.");
-      } finally {
-        setIsLoading(false);
-      }
+  const fetchUsers = async () => {
+    try {
+      setIsLoading(true);
+      const res = await fetch("/api/appointmentuser/all");
+      if (!res.ok) throw new Error(`HTTP error! ${res.status}`);
+      const data: Usuario[] = await res.json();
+      setAllUsers(data);
+      setUsers(data);
+      setError(null);
+    } catch (err) {
+      console.error(err);
+      setError("Error al cargar usuarios.");
+    } finally {
+      setIsLoading(false);
     }
+  };
+
+  // cargar usuarios al iniciar
+  useEffect(() => {
     fetchUsers();
   }, []);
 
-   useEffect(() => {
+  useEffect(() => {
     const filtered = allUsers.filter((u) => {
       const status = u.status?.toLowerCase();
       if (showActive && !showInactive) return status === "active";
       if (!showActive && showInactive) return status === "inactive";
-      if (showActive && showInactive) return true; // muestra todos si ambos
+      if (showActive && showInactive) return true;
       return true;
     });
     setUsers(filtered);
@@ -147,7 +150,7 @@ export default function BuscarUsuarios() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setSearchParams(prev => ({ ...prev, [name]: value }));
+    setSearchParams((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
@@ -168,23 +171,16 @@ export default function BuscarUsuarios() {
         (u.company?.name && u.company.name.toLowerCase().includes(searchParams.company.toLowerCase()));
       const userTypeMatch =
         !searchParams.userTypeId ||
-        (u.appointmentUserType?.name && u.appointmentUserType.name.toLowerCase() === searchParams.userTypeId.toLowerCase());
-     
-        let statusMatch = true;
-      const status = u.status?.toLowerCase();
+        (u.appointmentUserType?.name &&
+          u.appointmentUserType.name.toLowerCase() === searchParams.userTypeId.toLowerCase());
 
+      let statusMatch = true;
+      const status = u.status?.toLowerCase();
       if (showActive && !showInactive) statusMatch = status === "active";
       else if (!showActive && showInactive) statusMatch = status === "inactive";
       else if (showActive && showInactive) statusMatch = status === "active" || status === "inactive";
-  
-        return (
-        nameMatch &&
-        lastNameMatch &&
-        emailMatch &&
-        companyMatch &&
-        userTypeMatch &&
-        statusMatch
-      );
+
+      return nameMatch && lastNameMatch && emailMatch && companyMatch && userTypeMatch && statusMatch;
     });
 
     setUsers(filtered);
@@ -193,29 +189,21 @@ export default function BuscarUsuarios() {
 
   // Paginación
   const totalPages = Math.ceil(users.length / rowsPerPage);
-  const paginatedUsers = users.slice(
-    (currentPage - 1) * rowsPerPage,
-    currentPage * rowsPerPage
-  );
-
-const userTypeName = (id: number) => {
-  switch (id) {
-    case 1: return "ADMIN";
-    case 2: return "CLIENT";
-    default: return "N/A";
-  }
-};
-
+  const paginatedUsers = users.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
 
   const handleClick = () => {
-    router.push("/aplicaciones/crear_usuario"); 
+    router.push("/aplicaciones/crear_usuario");
   };
 
   const handleOpenUserModal = (userId: number) => {
-  setSelectedUserId(userId);
-  setShowUserModal(true);
-};
+    setSelectedUserId(userId);
+    setShowUserModal(true);
+  };
 
+  const handleCloseModal = async () => {
+    setShowUserModal(false);
+    await fetchUsers(); 
+  };
 
   return (
     <ScaleIn>
@@ -445,10 +433,7 @@ const userTypeName = (id: number) => {
             </div>
           </div>
         </form>
-        <ModalWrapper
-          isOpen={showUserModal}
-          onClose={() => setShowUserModal(false)}
-        >
+        <ModalWrapper isOpen={showUserModal} onClose={handleCloseModal}>
           {selectedUserId && <UsuarioVerMas id={selectedUserId} />}
         </ModalWrapper>
       </div>

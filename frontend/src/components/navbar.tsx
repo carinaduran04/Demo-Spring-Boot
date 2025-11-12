@@ -7,7 +7,7 @@ import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 
 export default function Navbar() {
-  const [logoActivo, setLogoActivo] = useState("/logo18.png"); // logo por defecto
+  const [logoActivo, setLogoActivo] = useState("/logo18.png"); 
   const [userName, setUserName] = useState("");
   const [address, setAddress] = useState("");
   const [currentUser, setCurrentUser] = useState<any>(null);
@@ -78,7 +78,7 @@ export default function Navbar() {
 
   const handleLogout = () => {
     localStorage.removeItem("user");
-    sessionStorage.removeItem("nav"); // ⬅️ se borra la navegación válida
+    sessionStorage.removeItem("nav"); 
     setUserName("");
     window.location.href = "/login";
   };
@@ -149,7 +149,7 @@ export default function Navbar() {
                 className="flex items-center gap-2 bg-white text-green-600 px-3 py-1.5 text-sm rounded-lg border-2 border-white transition-all duration-200 hover:bg-green-800 hover:text-white"
               >
                 <FaWpforms className="text-lg font-bold" />
-                CREAR CITA
+                CREAR CITAa
               </Link>
             </li>
   

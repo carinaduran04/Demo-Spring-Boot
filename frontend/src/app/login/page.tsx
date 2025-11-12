@@ -57,7 +57,7 @@ export default function Login() {
           userTypeId: u.userTypeId || 99,
           role: adminIds.includes(u.userId) ? "admin" : "user",
           address: addr,
-          active: u.status?.toUpperCase() === "ACTIVE", // por si no viene, se asume activo
+          active: u.status?.toUpperCase() === "ACTIVE", 
         };
       });
 

@@ -72,7 +72,7 @@ export default function SolicitudPrestamo() {
   });
 
   const [currentPage, setCurrentPage] = useState(1);
-  const rowsPerPage = 8;
+  const rowsPerPage = 12;
   const adminIds = [1, 6, 7, 8];
   const isAdmin = adminIds.includes(currentUser?.id);
 
@@ -111,8 +111,7 @@ export default function SolicitudPrestamo() {
       }
     `,
   });
-
-useEffect(() => {
+  useEffect(() => {
     if (typeof window !== "undefined") {
       const storedUser = localStorage.getItem("user");
       if (storedUser) {
@@ -126,57 +125,52 @@ useEffect(() => {
     }
   }, []);
 
-  useEffect(() => {
-    let cancelled = false;
+  const fetchAllAppointments = async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch("/api/appointmentdetail/all");
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      const data: Appointment[] = await response.json();
 
-    async function fetchAllAppointments() {
-      try {
-        const response = await fetch("/api/appointmentdetail/all");
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        const data: Appointment[] = await response.json();
-
-        let filteredData: Appointment[] = [];
-
-        if (isAdmin) {
-          filteredData = data;
-        } else if (currentUser) {
-          filteredData = data.filter(a => a.userId?.userId === currentUser.id);
-        }
-
-        if (!cancelled) {
-          setAllAppointments(filteredData);
-          setAppointments(filteredData);
-        }
-      } catch (e: unknown) {
-        if (e instanceof Error) setError(e.message);
-        else setError("An unknown error occurred.");
-      } finally {
-        if (!cancelled) setIsLoading(false);
+      let filteredData: Appointment[] = [];
+      if (isAdmin) {
+        filteredData = data;
+      } else if (currentUser) {
+        filteredData = data.filter(a => a.userId?.userId === currentUser.id);
       }
-    }
 
-    fetchAllAppointments();
-    return () => {
-      cancelled = true;
-    };
+      setAllAppointments(filteredData);
+      setAppointments(filteredData);
+      setError(null);
+    } catch (e: unknown) {
+      if (e instanceof Error) setError(e.message);
+      else setError("An unknown error occurred.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // cargar citas al iniciar
+  useEffect(() => {
+    if (currentUser) {
+      fetchAllAppointments();
+    }
   }, [currentUser, isAdmin]);
 
-  // Nuevo useEffect para cargar dueños
-useEffect(() => {
-  async function fetchOwners() {
-    try {
-      const res = await fetch("/api/appointmentuser/all");
-      if (!res.ok) throw new Error("Error al cargar usuarios");
-      const data: Usuario[] = await res.json();
-      console.log("Usuarios cargados:", data);
-      setOwners(data);
-    } catch (error) {
-      console.error("Error cargando dueños:", error);
+  // cargar dueños
+  useEffect(() => {
+    async function fetchOwners() {
+      try {
+        const res = await fetch("/api/appointmentuser/all");
+        if (!res.ok) throw new Error("Error al cargar usuarios");
+        const data: Usuario[] = await res.json();
+        setOwners(data);
+      } catch (error) {
+        console.error("Error cargando dueños:", error);
+      }
     }
-  }
-
-  fetchOwners();
-}, []);
+    fetchOwners();
+  }, []);
 
   useEffect(() => {
     const filtered = allAppointments.filter(a => {
@@ -194,52 +188,46 @@ useEffect(() => {
   };
 
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
-  e.preventDefault();
+    e.preventDefault();
+    const filteredAppointments = allAppointments.filter(a => {
+      const status = a.status?.toLowerCase();
+      const isActive = status === "active";
+      if (showActive && !isActive) return false;
+      if (showInactive && isActive) return false;
+      if (searchParams.ownerName && 
+          a.userId?.userName?.toLowerCase() !== searchParams.ownerName.toLowerCase()) {
+        return false;
+      }
 
-  const filteredAppointments = allAppointments.filter(a => {
-    const status = a.status?.toLowerCase();
+      const citaDate = new Date(a.consultingDate);
+      const desde = searchParams.fechaInicio ? new Date(searchParams.fechaInicio) : null;
+      const hasta = searchParams.fechaFin ? new Date(searchParams.fechaFin) : null;
 
-    // Filtro por estado
-    const isActive = status === "active";
-    if (showActive && !isActive) return false;
-    if (showInactive && isActive) return false;
+      if (desde && hasta && desde.getTime() === hasta.getTime()) {
+        const citaString = citaDate.toISOString().split("T")[0];
+        const desdeString = desde.toISOString().split("T")[0];
+        if (citaString !== desdeString) return false;
+      }
 
-    // Filtro por dueño
-    if (searchParams.ownerName && 
-        a.userId?.userName?.toLowerCase() !== searchParams.ownerName.toLowerCase()) {
-      return false;
-    }
+      if (desde && citaDate < desde) return false;
+      if (hasta && citaDate > hasta) return false;
 
-    // Filtro por rango de fechas
-    const citaDate = new Date(a.consultingDate);
-    const desde = searchParams.fechaInicio ? new Date(searchParams.fechaInicio) : null;
-    const hasta = searchParams.fechaFin ? new Date(searchParams.fechaFin) : null;
-
-    if (desde && hasta && desde.getTime() === hasta.getTime()) {
-      const citaString = citaDate.toISOString().split("T")[0];
-      const desdeString = desde.toISOString().split("T")[0];
-      if (citaString !== desdeString) return false;
-    }
-
-    if (desde && citaDate < desde) return false;
-    if (hasta && citaDate > hasta) return false;
-      const matches =
+      return (
         (!searchParams.firstName || a.firstName.toLowerCase().startsWith(searchParams.firstName.toLowerCase())) &&
         (!searchParams.lastName || a.lastName.toLowerCase().startsWith(searchParams.lastName.toLowerCase())) &&
         (!searchParams.email || a.email.toLowerCase().startsWith(searchParams.email.toLowerCase())) &&
         (!searchParams.phone || a.phone.toLowerCase().startsWith(searchParams.phone.toLowerCase())) &&
         (!searchParams.consultingType || a.consultingType.toLowerCase().startsWith(searchParams.consultingType.toLowerCase())) &&
         (!searchParams.direccion || a.appointmentAddress?.address.toLowerCase().startsWith(searchParams.direccion.toLowerCase())) &&
-        (!searchParams.ownerName || a.userId?.userName?.toLowerCase().includes(searchParams.ownerName.toLowerCase()));
-
-      return matches;
+        (!searchParams.ownerName || a.userId?.userName?.toLowerCase().includes(searchParams.ownerName.toLowerCase()))
+      );
     });
 
     setAppointments(filteredAppointments);
     setCurrentPage(1);
   };
 
-  function formatDateTime(dateString: string) {
+  const formatDateTime = (dateString: string) => {
     if (!dateString) return "";
     const date = new Date(dateString);
     return date
@@ -252,7 +240,7 @@ useEffect(() => {
         hour12: true, 
       })
       .replace(",", ""); 
-  }
+  };
 
   const handleVerMas = (appointment: Appointment) => {
     setSelectedData({
@@ -270,11 +258,15 @@ useEffect(() => {
     setShowModal(true);
   };
 
+  const handleCloseModal = async () => {
+    setShowModal(false);
+    await fetchAllAppointments(); 
+  };
+
   const totalPages = Math.ceil(appointments.length / rowsPerPage);
   const startIndex = (currentPage - 1) * rowsPerPage;
-  const endIndex = startIndex + rowsPerPage;
-  const paginatedAppointments = appointments.slice(startIndex, endIndex);
- 
+  const paginatedAppointments = appointments.slice(startIndex, startIndex + rowsPerPage);
+
   return (
     <ScaleIn>
       <div className="flex justify-center py-1 pt-8 px- p-35">
@@ -494,7 +486,7 @@ useEffect(() => {
                     margin: "10px 0",
                   }}
                 ></div>
-            <div className="max-h-[300px] overflow-y-auto" >   
+            <div className="max-h-[400px] overflow-x-auto w-full" >   
               <table className="min-w-[900px] w-full">
                 <thead className="bg-green-600 text-white sticky top-0">
                   <tr>
@@ -609,9 +601,9 @@ useEffect(() => {
           </div>
         </form>
          {/* Modal para VER MÁS */}
-      <ModalWrapper isOpen={showModal} onClose={() => setShowModal(false)}>
-        <PersonForm data={selectedData || {}} />
-      </ModalWrapper>
+      <ModalWrapper isOpen={showModal} onClose={handleCloseModal}>
+          <PersonForm data={selectedData || {}} />
+        </ModalWrapper>
       </div>
     </ScaleIn>
   );

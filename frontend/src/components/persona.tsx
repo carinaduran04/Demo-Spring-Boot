@@ -1,249 +1,282 @@
-  "use client";
+"use client";
 
-  import { useState, useEffect } from "react";
-  import ScaleIn from "./scaleIn";
-  import { useRouter, useParams } from "next/navigation";
-  import ModalAlert from "@/components/modalalert"; 
+import { useState, useEffect } from "react";
+import ScaleIn from "./scaleIn";
+import { useRouter, useParams } from "next/navigation";
+import ModalAlert from "@/components/modalalert";
 
-  interface PersonData {
-    id?: number;
-    nombre?: string;
-    apellidos?: string;
-    apodo?: string;
-    cedula?: string;
-    estadoCivil?: string;
-    profesion?: string;
-    ciudad?: string;
-    telefono?: string;
-    celular?: string;
-    email?: string;
-    direccion?: string;
-    tipoConsulta?: string;
-    fechaConsulta?: string;
-    doctorNombre?: string;
-    doctorApellidos?: string;
-    doctorClinica?: string;
-    doctorCiudad?: string;
-    doctorTelefono?: string;
-    doctorEmail?: string;
-    mensaje?: string;
-    especialidad?: string;
-    activo?: boolean;
-  }
+interface PersonData {
+  id?: number;
+  nombre?: string;
+  apellidos?: string;
+  apodo?: string;
+  cedula?: string;
+  estadoCivil?: string;
+  profesion?: string;
+  ciudad?: string;
+  telefono?: string;
+  celular?: string;
+  email?: string;
+  direccion?: string;
+  tipoConsulta?: string;
+  fechaConsulta?: string;
+  doctorNombre?: string;
+  doctorApellidos?: string;
+  doctorClinica?: string;
+  doctorCiudad?: string;
+  doctorTelefono?: string;
+  doctorEmail?: string;
+  mensaje?: string;
+  especialidad?: string;
+  activo?: boolean;
+}
 
-  interface Props {
-    data?: PersonData;
-  }
+interface Props {
+  data?: PersonData;
+}
 
-  export default function PersonForm({ data }: Props) {
-    const params = useParams();
-    const idFromUrl = params?.id ? Number(params.id) : 0;
-    const router = useRouter();
-    const visibleTabs = ["consulta"]; 
-    const [activeTab, setActiveTab] = useState<string>(visibleTabs[0]);
-    const [isEditing, setIsEditing] = useState(false);
-    const [hasChanges, setHasChanges] = useState(false);
-    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false); 
-    
-    
-    const [form, setForm] = useState<PersonData>({
-      id: data?.id || idFromUrl || 0,
-      nombre: data?.nombre || "",
-      apellidos: data?.apellidos || "",
-      apodo: data?.apodo || "",
-      cedula: data?.cedula || "",
-      estadoCivil: data?.estadoCivil || "",
-      profesion: data?.profesion || "",
-      ciudad: data?.ciudad || "",
-      telefono: data?.telefono || "",
-      celular: data?.celular || "",
-      email: data?.email || "",
-      direccion: data?.direccion || "",
-      tipoConsulta: data?.tipoConsulta || "",
-      fechaConsulta: data?.fechaConsulta || "",
-      doctorNombre: data?.doctorNombre || "",
-      doctorApellidos: data?.doctorApellidos || "",
-      doctorClinica: data?.doctorClinica || "",
-      doctorCiudad: data?.doctorCiudad || "",
-      doctorTelefono: data?.doctorTelefono || "",
-      doctorEmail: data?.doctorEmail || "",
-      mensaje: data?.mensaje || "",
-      especialidad: data?.especialidad || "",
-      activo: data?.activo !== false,
+export default function PersonForm({ data }: Props) {
+  const params = useParams();
+  const idFromUrl = params?.id ? Number(params.id) : 0;
+  const router = useRouter();
+  const visibleTabs = ["consulta"];
+  const [activeTab, setActiveTab] = useState<string>(visibleTabs[0]);
+  const [isEditing, setIsEditing] = useState(false);
+  const [hasChanges, setHasChanges] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  const [form, setForm] = useState<PersonData>({
+    id: data?.id || idFromUrl || 0,
+    nombre: data?.nombre || "",
+    apellidos: data?.apellidos || "",
+    apodo: data?.apodo || "",
+    cedula: data?.cedula || "",
+    estadoCivil: data?.estadoCivil || "",
+    profesion: data?.profesion || "",
+    ciudad: data?.ciudad || "",
+    telefono: data?.telefono || "",
+    celular: data?.celular || "",
+    email: data?.email || "",
+    direccion: data?.direccion || "",
+    tipoConsulta: data?.tipoConsulta || "",
+    fechaConsulta: data?.fechaConsulta || "",
+    doctorNombre: data?.doctorNombre || "",
+    doctorApellidos: data?.doctorApellidos || "",
+    doctorClinica: data?.doctorClinica || "",
+    doctorCiudad: data?.doctorCiudad || "",
+    doctorTelefono: data?.doctorTelefono || "",
+    doctorEmail: data?.doctorEmail || "",
+    mensaje: data?.mensaje || "",
+    especialidad: data?.especialidad || "",
+    activo: data?.activo !== false,
+  });
+  useEffect(() => {
+  if (data) {
+    setForm({
+      id: data.id || idFromUrl || 0,
+      nombre: data.nombre || "",
+      apellidos: data.apellidos || "",
+      apodo: data.apodo || "",
+      cedula: data.cedula || "",
+      estadoCivil: data.estadoCivil || "",
+      profesion: data.profesion || "",
+      ciudad: data.ciudad || "",
+      telefono: data.telefono || "",
+      celular: data.celular || "",
+      email: data.email || "",
+      direccion: data.direccion || "",
+      tipoConsulta: data.tipoConsulta || "",
+      fechaConsulta: data.fechaConsulta || "",
+      doctorNombre: data.doctorNombre || "",
+      doctorApellidos: data.doctorApellidos || "",
+      doctorClinica: data.doctorClinica || "",
+      doctorCiudad: data.doctorCiudad || "",
+      doctorTelefono: data.doctorTelefono || "",
+      doctorEmail: data.doctorEmail || "",
+      mensaje: data.mensaje || "",  // 👈 clave
+      especialidad: data.especialidad || "",
+      activo: data.activo !== false,
     });
 
-    const [originalData, setOriginalData] = useState(form);
-    const [showModal, setShowModal] = useState(false);
-    const [modalMessage, setModalMessage] = useState("");
-    const [onOkAction, setOnOkAction] = useState<(() => void) | null>(null);
-    const [onCancelAction, setOnCancelAction] = useState<(() => void) | null>(null);
-    const [user, setUser] = useState<{ username?: string;  role?: string } | null>(null);
+    setOriginalData(data);
+  }
+}, [data]);
 
 
-    useEffect(() => {
-      const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
-      if (storedUser && storedUser.username) {
-        setUser(storedUser);
-        console.log("Usuario cargado:", storedUser);
-      }
-    }, []);
+
+
+  const [originalData, setOriginalData] = useState(form);
+  const [showModal, setShowModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
+  const [onOkAction, setOnOkAction] = useState<(() => void) | null>(null);
+  const [onCancelAction, setOnCancelAction] = useState<(() => void) | null>(null);
+  const [user, setUser] = useState<{ username?: string; role?: string } | null>(
+    null
+  );
+
+  useEffect(() => {
+    const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
+    if (storedUser && storedUser.username) {
+      setUser(storedUser);
+      console.log("Usuario cargado:", storedUser);
+    }
+  }, []);
+
   const isAdmin = user?.role === "admin";
-  {/*
-    const adminUsers = ["1", "6", "7", "8"];  
-    const isAdmin = adminUsers.includes(user?.username?.toLowerCase() || ""); 
-    console.log("isAdmin:", isAdmin);
-  */}
 
+  useEffect(() => {
+    if (!isEditing) return;
+    const isEqual = JSON.stringify(form) === JSON.stringify(originalData);
+    setHasChanges(!isEqual);
+  }, [form, originalData, isEditing]);
 
-    useEffect(() => {
-      if (!isEditing) return;
-      const isEqual = JSON.stringify(form) === JSON.stringify(originalData);
-      setHasChanges(!isEqual);
-    }, [form, originalData, isEditing]);
-
-    const handleChange = (field: keyof PersonData, value: string | boolean) => {
-      setForm((prev) => ({ ...prev, [field]: value }));
-    };
+  const handleChange = (field: keyof PersonData, value: string | boolean) => {
+    setForm((prev) => ({ ...prev, [field]: value }));
+  };
 
   const showModalDialog = (
-      message: string,
-      onOkActionParam?: () => void | Promise<void>,
-      onCancelActionParam?: () => void | Promise<void>
-    ) => {
-      setModalMessage(message);
-      setOnOkAction(() => onOkActionParam || null); 
-      setOnCancelAction(() => onCancelActionParam || null);
-      setShowModal(true);
+    message: string,
+    onOkActionParam?: () => void | Promise<void>,
+    onCancelActionParam?: () => void | Promise<void>
+  ) => {
+    setModalMessage(message);
+    setOnOkAction(() => onOkActionParam || null);
+    setOnCancelAction(() => onCancelActionParam || null);
+    setShowModal(true);
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+    setModalMessage("");
+    setOnOkAction(null);
+    setOnCancelAction(null);
+  };
+
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    if (!form.id) {
+      showModalDialog("No se puede guardar: falta el ID del registro");
+      return;
+    }
+
+    const payload = {
+      firstName: (form.nombre || "").toUpperCase(),
+      lastName: (form.apellidos || "").toUpperCase(),
+      fullName: `${form.nombre || ""} ${form.apellidos || ""}`.toUpperCase().trim(),
+      phone: (form.telefono || "").toUpperCase(),
+      email: form.email || "",
+      consultingType: (form.tipoConsulta || "").toUpperCase(),
+      consultingDate: form.fechaConsulta
+        ? new Date(form.fechaConsulta).toISOString()
+        : null,
+      comment: (form.mensaje || "").toUpperCase(),
+      status: form.activo ? "ACTIVE" : "INACTIVO",
+      appointmentAddress: {
+        address: (form.direccion || "").toUpperCase(),
+        city: (form.ciudad || "").toUpperCase(),
+      },
     };
 
-    const closeModal = () => {
-      setShowModal(false);
-      setModalMessage("");
-      setOnOkAction(null);
-      setOnCancelAction(null);
-    };
-    const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-      e.preventDefault();
+    try {
+      const response = await fetch(`/api/appointmentdetail/update/${form.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
 
-      if (!form.id) {
-        showModalDialog("No se puede guardar: falta el ID del registro");
-        return;
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Error al guardar (${response.status}): ${errorText}`);
       }
-
-      const payload = {
-        firstName: (form.nombre || "").toUpperCase(),
-        lastName: (form.apellidos || "").toUpperCase(),
-        fullName: `${form.nombre || ""} ${form.apellidos || ""}`.toUpperCase().trim(),
-        phone: (form.telefono || "").toUpperCase(),
-        email: form.email || "",
-        consultingType: (form.tipoConsulta || "").toUpperCase(),
-        consultingDate: form.fechaConsulta ? new Date(form.fechaConsulta).toISOString() : null,
-        comment: (form.mensaje || "").toUpperCase(),
-        status: form.activo ? "ACTIVE" : "INACTIVO",
-        appointmentAddress: {
-        
-          address: (form.direccion || "").toUpperCase(),
-          city: (form.ciudad || "").toUpperCase(),
-        },
-      };
-
-      try {
-        const response = await fetch(`/api/appointmentdetail/update/${form.id}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
-
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(`Error al guardar (${response.status}): ${errorText}`);
-        }
 
       const savedData = await response.json();
-        console.log("Registro actualizado:", savedData);
+      console.log("Registro actualizado:", savedData);
 
-        showModalDialog("Cambios guardados correctamente en la base de datos", () => {
-          setOriginalData(form);
-          setIsEditing(false);
-          setHasChanges(false);
-        });
-      } catch (error) {
-        console.error("Error al guardar:", error);
-        showModalDialog("Ocurrió un error al guardar los cambios");
-      }
-    };
+      showModalDialog("Cambios guardados correctamente en la base de datos", () => {
+        setOriginalData(form);
+        setIsEditing(false);
+        setHasChanges(false);
+      });
+    } catch (error) {
+      console.error("Error al guardar:", error);
+      showModalDialog("Ocurrió un error al guardar los cambios");
+    }
+  };
 
-      const onCancel = () => {
-      if (!hasChanges) {
+  const onCancel = () => {
+    if (!hasChanges) {
+      setForm(originalData);
+      setIsEditing(false);
+      setHasChanges(false);
+      return;
+    }
+
+    showModalDialog(
+      "¿Seguro que deseas cancelar? Se perderán los cambios no guardados.",
+      () => {
         setForm(originalData);
         setIsEditing(false);
         setHasChanges(false);
-        return;
       }
+    );
+  };
 
-      showModalDialog(
-        "¿Seguro que deseas cancelar? Se perderán los cambios no guardados.",
-        () => {
-          setForm(originalData);
-          setIsEditing(false);
-          setHasChanges(false);
-        }
-      );
-    };
+  const handleDelete = () => {
+    const idToDelete = form.id || idFromUrl;
+    if (!idToDelete || idToDelete === 0) {
+      showModalDialog("No se puede eliminar: falta el ID válido");
+      return;
+    }
 
-    
-    const handleDelete = () => {
-      const idToDelete = form.id || idFromUrl;
-      if (!idToDelete || idToDelete === 0) {
-        showModalDialog("No se puede eliminar: falta el ID válido");
-        return;
-      }
-
-  showModalDialog(
-        "¿Estás seguro de que deseas eliminar esta cita?",
-        async () => {
-          try {
-            const response = await fetch(`/api/appointmentdetail/delete/${idToDelete}`, {
+    showModalDialog(
+      "¿Estás seguro de que deseas eliminar esta cita?",
+      async () => {
+        try {
+          const response = await fetch(
+            `/api/appointmentdetail/delete/${idToDelete}`,
+            {
               method: "DELETE",
               headers: { "Content-Type": "application/json" },
-            });
-            if (!response.ok) {
-              throw new Error(`Error del servidor: ${response.status}`);
             }
+          );
+          if (!response.ok) {
+            throw new Error(`Error del servidor: ${response.status}`);
+          }
 
-            console.log("Cita eliminada correctamente");
-            
-              router.push("/aplicaciones/consulta");
-            } catch (error) {
-              console.error("Error al eliminar:", error);
-              closeModal();
-              showModalDialog("Ocurrió un error al eliminar la cita");
-            }
-        },
-        () => {
-        console.log("Eliminación cancelada"); 
-          closeModal();
-        }
-      );
-    };
-    const handleExit = () => {
-      if (!hasChanges) {
-        router.push("/aplicaciones/consulta");
-        return;
-      }
-      showModalDialog(
-        "¿Seguro que deseas salir? Se perderán los cambios no guardados.",
-        () => {
+          console.log("Cita eliminada correctamente");
           router.push("/aplicaciones/consulta");
+        } catch (error) {
+          console.error("Error al eliminar:", error);
+          closeModal();
+          showModalDialog("Ocurrió un error al eliminar la cita");
         }
-      );
-    };
+      },
+      () => {
+        console.log("Eliminación cancelada");
+        closeModal();
+      }
+    );
+  };
+
+  const handleExit = () => {
+    if (!hasChanges) {
+      router.push("/aplicaciones/consulta");
+      return;
+    }
+    showModalDialog(
+      "¿Seguro que deseas salir? Se perderán los cambios no guardados.",
+      () => {
+        router.push("/aplicaciones/consulta");
+      }
+    );
+  };
 
  
   return (
     <ScaleIn>
      <div className=" my-auto">
-      <div className="max-w-6xl mx-auto p-6 bg-gray-100 border-2 border-green-600 rounded-xl shadow m-10">
+      <div className="max-w-5xl mx-auto p-6 bg-gray-100 border-2 border-green-600 rounded-xl shadow m-10">
       <div className="flex gap-6 border-b pb-2 mb-4 text-lg font-bold text-gray-700">
         {visibleTabs.map((tab) => (
               <button

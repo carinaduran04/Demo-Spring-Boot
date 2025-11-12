@@ -18,7 +18,7 @@ export default function Tabs({ onTabChange }: { onTabChange: (tab: string) => vo
     setActive(id);
     onTabChange(id);
   };
-
+  
   return (
     <div className="border-b border-gray-300 mb-4 flex gap-4">
       {tabs.map((tab) => (
