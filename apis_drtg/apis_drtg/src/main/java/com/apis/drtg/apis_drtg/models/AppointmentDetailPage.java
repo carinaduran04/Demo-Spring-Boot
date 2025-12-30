@@ -18,6 +18,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class AppointmentDetailPage {
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) 
     @Column(name="APPOINTMENT_DTL_ID")

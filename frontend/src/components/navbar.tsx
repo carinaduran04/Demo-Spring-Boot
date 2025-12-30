@@ -7,11 +7,12 @@ import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 
 export default function Navbar() {
-  const [logoActivo, setLogoActivo] = useState("/logo18.png"); 
+  const [logoActivo, setLogoActivo] = useState("/logo18.png");
   const [userName, setUserName] = useState("");
   const [address, setAddress] = useState("");
   const [currentUser, setCurrentUser] = useState<any>(null);
-  const [userText, setUserText] = useState<{ line1: string }>({ line1: "" });
+  const [companyName, setCompanyName] = useState(""); 
+  const [userText, setUserText] = useState({ line1: "" });
 
   const pathname = usePathname();
 
@@ -24,33 +25,33 @@ export default function Navbar() {
   const isOnDisabledPage = disabledPages.some((page) =>
     pathname.startsWith(page)
   );
-
-  useEffect(() => {
+ useEffect(() => {
     const storedUser = localStorage.getItem("user");
 
-   if (storedUser) {
+    if (!storedUser) return;
+
     const parsed = JSON.parse(storedUser);
-    console.log("🧩 Usuario en localStorage:", parsed);
 
-    let user = null;
-
-    if (Array.isArray(parsed)) {
-      user = parsed.find(u => u.active === true) || parsed[0];
-    } else {
-      user = parsed;
-    }
+    // Soporta array o objeto único
+    const user = Array.isArray(parsed)
+      ? parsed.find((u) => u.active === true) || parsed[0]
+      : parsed;
 
     if (!user) return;
 
-    console.log("✅ Usuario activo:", user);
-    console.log("🏠 Dirección:", user.address);
-
     setCurrentUser(user);
+
+    // Nombre del usuario
     setUserName(user.fullName || user.userName || "Usuario");
 
+    // Datos de la compañía
+    if (user.company?.companyName) setCompanyName(user.company.companyName);
+
+    // Dirección
     if (user.address) {
       const direccion = user.address.address || "";
       const ciudad = user.address.city || "";
+
       setAddress(
         direccion && ciudad
           ? `${direccion}, ${ciudad}`
@@ -60,39 +61,52 @@ export default function Navbar() {
       setAddress("Dirección no disponible");
     }
 
-      const email = parsed.username?.toLowerCase() || "";
+    // Determinar logo
+    let logo = "/logo18.png";
 
-      // Aquí se define qué logo y texto mostrar según el usuario
-    if (user.appointmentUserType?.name === "ADMIN") {
-      setLogoActivo("/logo18.png");
-      setUserText({ line1: "Bienvenido a la plataforma" });
-    } else if (email.includes("eddy")) {
-      setLogoActivo("/eddylo.png");
-      setUserText({ line1: "ARQUITECTO EDDY LOPEZ" });
-    } else if (email.includes("caro")) {
-      setLogoActivo("/carooo.png");
-      setUserText({ line1: "CAROLINA VENDE" });
+    // Si el backend trae logo
+    if (user.company?.logoUrl) {
+      logo = user.company.logoUrl;
+
+    } else {
+      // Si no trae logo, usa lógica basada en email o roles
+      const email = (user.username || user.email || "").toLowerCase();
+
+      if (user.appointmentUserType?.name === "ADMIN") {
+        logo = "/logo18.png";
+        setUserText({ line1: "Bienvenido a la plataforma" });
+      } else if (email.includes("eddy")) {
+        logo = "/eddylo.png";
+        setUserText({ line1: "ARQUITECTO EDDY LOPEZ" });
+      } else if (email.includes("caro")) {
+        logo = "/carooo.png";
+        setUserText({ line1: "CAROLINA VENDE" });
+      }
     }
-  }
-}, []);
+
+    setLogoActivo(logo);
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("user");
-    sessionStorage.removeItem("nav"); 
+    sessionStorage.removeItem("nav");
     setUserName("");
     window.location.href = "/login";
   };
+
 
   return (
     <div className="top-0 left-0 right-0 z-40">
       <nav className="bg-green-600 text-white font-semibold px-14 py-2 shadow-md w-full">
         <div className="relative flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            {/* Logo */}
+
+            {/* LOGO DINÁMICO */}
             <Image src={logoActivo} alt="Logo activo" width={60} height={60} />
+
             <div className="h-[3rem] w-[.2rem] bg-white rounded-[1.5rem]"></div>
 
-            {/* Texto según tipo de usuario */}
+            {/* TEXTO */}
             <div className="flex flex-col items-start">
               {currentUser?.role === "admin" ? (
                 <h1 className="text-[1.5rem] font-semibold text-white group inline-flex text-2xl">
@@ -106,19 +120,24 @@ export default function Navbar() {
                   </span>
                 </h1>
               ) : (
-                <>
-                  <p className="text-white text-base font-semibold">{userText.line1}</p>
-                </>
+                <p className="text-white text-base font-semibold">
+                  {userText.line1}
+                </p>
               )}
 
-              {/* Dirección */}
+              {companyName && (
+                <p className="text-xs font-bold text-white opacity-90">
+                  {companyName}
+                </p>
+              )}
+
               {address && (
                 <p className="text-xs text-white opacity-90">{address}</p>
               )}
             </div>
           </div>
 
-          {/* Menú de navegación */}
+          {/* MENÚ */}
           <ul className="flex space-x-4 items-center text-white text-sm font-bold">
             <li className="px-3 border-r border-white last:border-0">
               <Link
@@ -152,9 +171,7 @@ export default function Navbar() {
                 CREAR CITAa
               </Link>
             </li>
-  
 
-            {/* Solo visible si el usuario es admin */}
             {currentUser?.role === "admin" && (
               <li className="px-3 border-r border-white last:border-0">
                 <Link
@@ -169,7 +186,7 @@ export default function Navbar() {
             )}
           </ul>
 
-          {/* Info usuario */}
+          {/* USUARIO */}
           <div className="flex items-center gap-4">
             {userName ? (
               <>
@@ -197,12 +214,7 @@ export default function Navbar() {
                 </button>
               </>
             ) : (
-              
-              <Link
-                href="/login"
-               
-              />
-              
+              <Link href="/login" />
             )}
           </div>
         </div>

@@ -5,9 +5,12 @@ import { useRouter } from "next/navigation";
 import ScaleIn from "@/components/scaleIn";
 import ModalAlert from "@/components/modalalert";
 
+
 export default function CrearUsuario() {
   const router = useRouter();
   const [hasChanges, setHasChanges] = useState(false);
+  const [fileLogo, setFileLogo] = useState<File | null>(null);
+
   const [form, setForm] = useState({
     userName: "",
     password: "",
@@ -20,6 +23,7 @@ export default function CrearUsuario() {
     role: "",
     address: "",
     city: "",
+    logoUrl: ""  
    
   });
 
@@ -28,13 +32,25 @@ export default function CrearUsuario() {
   const [onOkAction, setOnOkAction] = useState<(() => void) | null>(null);
   const [onCancelAction, setOnCancelAction] = useState<(() => void) | null>(null);
 
-  useEffect(() => {
+   useEffect(() => {
     const hayCambios = Object.values(form).some((v) => v !== "");
     setHasChanges(hayCambios);
   }, [form]);
 
   const handleChange = (e: any) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleLogoUpload = (e: any) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setFileLogo(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setForm((prev) => ({ ...prev, logoUrl: reader.result as string }));
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   
@@ -58,9 +74,9 @@ export default function CrearUsuario() {
       email: cleanEmail,
       title: form.title,
       role: form.role,
-      company:
+     company:
         form.userTypeId === "1" || form.userTypeId === "2"
-          ? { name: form.company }
+          ? { name: form.company, logoUrl: form.logoUrl }
           : null,
       address: { address: form.address, city: form.city,  createBy: "admin", createDate: new Date().toISOString()},
       appointmentUserType: { userTypeId: parseInt(form.userTypeId) },
@@ -96,6 +112,7 @@ export default function CrearUsuario() {
           role: "",
           address: "",
           city: "",
+          logoUrl: ""  
     });
   } else {
  
@@ -157,6 +174,7 @@ const handleCancel = () => {
           role: "",
           address: "",
           city: "",
+          logoUrl: ""  
       });
       setHasChanges(false);
       setShowModal(false); // Cierra el modal
@@ -329,8 +347,29 @@ const closeModal = () => {
                     <option value="2">CLIENT</option>
                   </select>
                 </div>
-               </div>
 
+                <div>
+                  <label className="block text-green-700 font-semibold mb-2">
+                    Logo de la Compañía
+                  </label>
+
+                  {form.logoUrl && (
+                    <img
+                      src={form.logoUrl}
+                      alt="Logo Preview"
+                      className="w-20 h-20 object-contain mb-2 border rounded"
+                    />
+                  )}
+
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleLogoUpload}
+                    className="w-full px-4 py-3 bg-white border rounded-lg"
+                  />
+                </div>
+              </div>
+              
               <div className="flex justify-center gap-6 pt-4">
                 <button
                   type="submit"

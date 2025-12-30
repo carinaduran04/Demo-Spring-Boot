@@ -30,8 +30,6 @@ export default function SolicitudPrestamo() {
               height={120}
               className="rounded-md shadow-md cursor-pointer"
             />
-         
-    
         </div>
       </section>
     </div>

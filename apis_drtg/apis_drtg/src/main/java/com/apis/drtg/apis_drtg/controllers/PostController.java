@@ -1,25 +1,26 @@
 package com.apis.drtg.apis_drtg.controllers;
 
+
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import com.apis.drtg.apis_drtg.models.AppointmentCompany;
 import com.apis.drtg.apis_drtg.models.AppointmentDetail;
 import com.apis.drtg.apis_drtg.models.AppointmentDetailPage;
 import com.apis.drtg.apis_drtg.models.user.AppointmentUser;
+import com.apis.drtg.apis_drtg.models.user.AppointmentUserType;
+import com.apis.drtg.apis_drtg.repositories.AppointmentAddressRepository;
+import com.apis.drtg.apis_drtg.repositories.AppointmentCompanyRepository;
 import com.apis.drtg.apis_drtg.repositories.AppointmentUserRepository;
+import com.apis.drtg.apis_drtg.repositories.AppointmentUserTypeRepository;
 import com.apis.drtg.apis_drtg.services.AppointmentDetailPageService;
 import com.apis.drtg.apis_drtg.services.AppointmentDetailService;
 import com.apis.drtg.apis_drtg.services.AppointmentUserService;
@@ -29,19 +30,26 @@ import com.apis.drtg.apis_drtg.services.AppointmentUserService;
 @CrossOrigin(origins = "*")
 public class PostController {
 
-    
-    // APPOINTMENT DETAIL PAGE 
     @Autowired
     private AppointmentDetailPageService appointmentDetailPageService;
+
+    @Autowired
+    private AppointmentCompanyRepository appointmentCompanyRepository;
+
+    @Autowired
+    private AppointmentDetailService appointmentDetailService;
+
+    @Autowired
+    private AppointmentUserService appointmentUserService;
+
+    @Autowired
+    private AppointmentUserRepository appointmentUserRepository;
+
 
     @PostMapping("/appointmentdetailpage/save")
     public AppointmentDetailPage postAppointmentDetailPage(@RequestBody AppointmentDetailPage appointmentDetailPage) {
         return appointmentDetailPageService.AppointmentPage(appointmentDetailPage);
     }
-
-    //APPOINTMENT DETAIL
-    @Autowired
-    private AppointmentDetailService appointmentDetailService;
 
     @GetMapping("/appointmentdetail/all")
     public List<AppointmentDetail> getAllAppointmentDetails() {
@@ -74,16 +82,9 @@ public class PostController {
         return appointmentDetailService.getActiveAppointments();
     }
 
-    //  APPOINTMENT USER 
-    @Autowired
-    private AppointmentUserService appointmentUserService;
-
-    @Autowired
-    private AppointmentUserRepository appointmentUserRepository;
-
-   @GetMapping("/appointmentuser/all")
+    @GetMapping("/appointmentuser/all")
     public List<AppointmentUser> getAllAppointmentUsers() {
-    return appointmentUserService.getAllAppointments();
+        return appointmentUserService.getAllAppointments();
     }
 
     @GetMapping("/appointmentuser/{id}")
@@ -91,11 +92,12 @@ public class PostController {
         return appointmentUserService.getAppointmentById(id);
     }
 
-    // Crear (guardar) un usuario 
+
     @PostMapping("/appointmentuser/save")
     public ResponseEntity<?> saveAppointmentUser(@RequestBody AppointmentUser user) {
         try {
-            // Validar datos básicos
+            Date now = Date.from(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant());
+
             if (user.getFirstName() != null && user.getLastName() != null) {
                 user.setFullName(user.getFirstName() + " " + user.getLastName());
             }
@@ -104,7 +106,6 @@ public class PostController {
                 user.setEmail(user.getEmail().trim().toLowerCase());
             }
 
-            // Validar duplicados
             if (user.getEmail() != null && appointmentUserRepository.findByEmail(user.getEmail()).isPresent()) {
                 return ResponseEntity.status(409).body("El correo electrónico ya está registrado");
             }
@@ -113,7 +114,15 @@ public class PostController {
                 return ResponseEntity.status(409).body("El nombre de usuario ya está en uso");
             }
 
-            // Guardar con compañía y dirección
+            if (user.getCompany() != null) {
+                AppointmentCompany company = user.getCompany();
+                company.setCreateDate(LocalDateTime.now());
+                company.setLastUpdateDate(LocalDateTime.now());
+                company.setCreateBy("admin");
+                company = appointmentCompanyRepository.save(company);
+                user.setCompany(company);
+            }
+
             AppointmentUser savedUser = appointmentUserService.saveUser(user);
             return ResponseEntity.ok(savedUser);
 
@@ -122,7 +131,6 @@ public class PostController {
         }
     }
 
-    // Actualizar usuario 
     @PutMapping("/appointmentuser/update/{id}")
     public ResponseEntity<?> updateAppointmentUser(@PathVariable int id, @RequestBody AppointmentUser updatedUser) {
         try {
@@ -136,7 +144,6 @@ public class PostController {
         }
     }
 
-    // Eliminación lógica 
     @DeleteMapping("/appointmentuser/delete/{id}")
     public ResponseEntity<?> deleteAppointmentUser(@PathVariable int id) {
         boolean deleted = appointmentUserService.deleteUser(id);
@@ -147,29 +154,22 @@ public class PostController {
         }
     }
 
-    //  Login simple 
-   @PostMapping("/appointmentuser/login")
+    @PostMapping("/appointmentuser/login")
     public ResponseEntity<?> loginUser(
-        @RequestParam String userName,
-        @RequestParam String password) {
-    try {
-        Optional<AppointmentUser> user = appointmentUserRepository.findActiveByCredentials(userName, password);
-
-        if (user.isPresent()) {
-            return ResponseEntity.ok(user.get());
-        } else {
-            return ResponseEntity.status(401)
-                    .body("Usuario inactivo o credenciales inválidas");
+            @RequestParam String userName,
+            @RequestParam String password) {
+        try {
+            Optional<AppointmentUser> user = appointmentUserRepository.findActiveByCredentials(userName, password);
+            if (user.isPresent()) {
+                return ResponseEntity.ok(user.get());
+            } else {
+                return ResponseEntity.status(401).body("Usuario inactivo o credenciales inválidas");
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Error al intentar iniciar sesión: " + e.getMessage());
         }
-
-    } catch (Exception e) {
-        return ResponseEntity.status(500)
-                .body("Error al intentar iniciar sesión: " + e.getMessage());
     }
-}
 
-
-    // Usuario con dirección 
     @GetMapping("/appointmentuser/{id}/address")
     public ResponseEntity<?> getUserWithAddress(@PathVariable int id) {
         Optional<AppointmentUser> user = appointmentUserRepository.findById(id);

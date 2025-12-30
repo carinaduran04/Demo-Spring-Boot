@@ -20,6 +20,7 @@ interface Usuario {
   addressName?: string;
   city?: string;
   status?: "ACTIVE" | "INACTIVE";
+  
 }
 
 interface UsuarioVerMasProps {
@@ -37,6 +38,9 @@ export default function UsuarioVerMas({ id }: UsuarioVerMasProps) {
   const [modalMessage, setModalMessage] = useState("");
   const [onOkAction, setOnOkAction] = useState<(() => void) | null>(null);
   const [onCancelAction, setOnCancelAction] = useState<(() => void) | null>(null);
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [previewLogo, setPreviewLogo] = useState<string | null>(null);
+
 
   useEffect(() => {
     const fetchUsuario = async () => {

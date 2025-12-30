@@ -15,7 +15,7 @@ interface User {
   userTypeId: number;
   fullName?: string;
   address?: any;
-  status?: string;  // nuevo campo
+  status?: string;  
 }
 
 export default function Login() {
@@ -110,7 +110,7 @@ if (typeof window !== "undefined") {
 }
 
       // Redirigir según tipo de usuario
-      if (validUser.role === "admin") {
+    if (validUser.role === "admin") {
         router.push("/aplicaciones/inicio");
       } else {
         router.push("/aplicaciones/consulta");
@@ -250,7 +250,6 @@ if (typeof window !== "undefined") {
           </p>
         </div>
       </div>
-
       <div className="fixed bottom-0 w-full z-22">
         <FooterPage />
       </div>

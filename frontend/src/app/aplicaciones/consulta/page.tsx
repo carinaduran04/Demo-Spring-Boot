@@ -31,7 +31,7 @@ interface Appointment {
   consultingType: string;
   consultingDate: string; 
   status: string;
-  
+  comment?: string;
 }
 
 interface SearchParams {
@@ -251,6 +251,7 @@ export default function SolicitudPrestamo() {
       email: appointment.email,
       direccion: appointment.appointmentAddress?.address,
       ciudad: appointment.appointmentAddress?.city,
+      comentario: appointment.comment,
       tipoConsulta: appointment.consultingType,
       fechaConsulta: appointment.consultingDate,
       activo: appointment.status === "ACTIVE",
@@ -601,7 +602,7 @@ export default function SolicitudPrestamo() {
           </div>
         </form>
          {/* Modal para VER MÁS */}
-      <ModalWrapper isOpen={showModal} onClose={handleCloseModal}>
+        <ModalWrapper isOpen={showModal} onClose={handleCloseModal}>
           <PersonForm data={selectedData || {}} />
         </ModalWrapper>
       </div>

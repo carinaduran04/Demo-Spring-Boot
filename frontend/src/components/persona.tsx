@@ -4,35 +4,10 @@ import { useState, useEffect } from "react";
 import ScaleIn from "./scaleIn";
 import { useRouter, useParams } from "next/navigation";
 import ModalAlert from "@/components/modalalert";
+import { PersonData } from "@/app/aplicaciones/persona/[id]/page";
 
-interface PersonData {
-  id?: number;
-  nombre?: string;
-  apellidos?: string;
-  apodo?: string;
-  cedula?: string;
-  estadoCivil?: string;
-  profesion?: string;
-  ciudad?: string;
-  telefono?: string;
-  celular?: string;
-  email?: string;
-  direccion?: string;
-  tipoConsulta?: string;
-  fechaConsulta?: string;
-  doctorNombre?: string;
-  doctorApellidos?: string;
-  doctorClinica?: string;
-  doctorCiudad?: string;
-  doctorTelefono?: string;
-  doctorEmail?: string;
-  mensaje?: string;
-  especialidad?: string;
-  activo?: boolean;
-}
-
-interface Props {
-  data?: PersonData;
+interface Props{ 
+  data: PersonData
 }
 
 export default function PersonForm({ data }: Props) {
@@ -44,15 +19,13 @@ export default function PersonForm({ data }: Props) {
   const [isEditing, setIsEditing] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  console.log("Datos recibidos en PersonForm:", data);
 
   const [form, setForm] = useState<PersonData>({
     id: data?.id || idFromUrl || 0,
     nombre: data?.nombre || "",
     apellidos: data?.apellidos || "",
-    apodo: data?.apodo || "",
     cedula: data?.cedula || "",
-    estadoCivil: data?.estadoCivil || "",
-    profesion: data?.profesion || "",
     ciudad: data?.ciudad || "",
     telefono: data?.telefono || "",
     celular: data?.celular || "",
@@ -60,61 +33,20 @@ export default function PersonForm({ data }: Props) {
     direccion: data?.direccion || "",
     tipoConsulta: data?.tipoConsulta || "",
     fechaConsulta: data?.fechaConsulta || "",
-    doctorNombre: data?.doctorNombre || "",
-    doctorApellidos: data?.doctorApellidos || "",
-    doctorClinica: data?.doctorClinica || "",
-    doctorCiudad: data?.doctorCiudad || "",
-    doctorTelefono: data?.doctorTelefono || "",
-    doctorEmail: data?.doctorEmail || "",
-    mensaje: data?.mensaje || "",
-    especialidad: data?.especialidad || "",
+    comentario: data?.comentario, 
     activo: data?.activo !== false,
   });
-  useEffect(() => {
-  if (data) {
-    setForm({
-      id: data.id || idFromUrl || 0,
-      nombre: data.nombre || "",
-      apellidos: data.apellidos || "",
-      apodo: data.apodo || "",
-      cedula: data.cedula || "",
-      estadoCivil: data.estadoCivil || "",
-      profesion: data.profesion || "",
-      ciudad: data.ciudad || "",
-      telefono: data.telefono || "",
-      celular: data.celular || "",
-      email: data.email || "",
-      direccion: data.direccion || "",
-      tipoConsulta: data.tipoConsulta || "",
-      fechaConsulta: data.fechaConsulta || "",
-      doctorNombre: data.doctorNombre || "",
-      doctorApellidos: data.doctorApellidos || "",
-      doctorClinica: data.doctorClinica || "",
-      doctorCiudad: data.doctorCiudad || "",
-      doctorTelefono: data.doctorTelefono || "",
-      doctorEmail: data.doctorEmail || "",
-      mensaje: data.mensaje || "",  // 👈 clave
-      especialidad: data.especialidad || "",
-      activo: data.activo !== false,
-    });
-
-    setOriginalData(data);
-  }
-}, [data]);
-
-
-
+ 
 
   const [originalData, setOriginalData] = useState(form);
   const [showModal, setShowModal] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
   const [onOkAction, setOnOkAction] = useState<(() => void) | null>(null);
   const [onCancelAction, setOnCancelAction] = useState<(() => void) | null>(null);
-  const [user, setUser] = useState<{ username?: string; role?: string } | null>(
-    null
+  const [user, setUser] = useState<{ username?: string; role?: string } | null>( null
   );
 
-  useEffect(() => {
+   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
     if (storedUser && storedUser.username) {
       setUser(storedUser);
@@ -170,7 +102,7 @@ export default function PersonForm({ data }: Props) {
       consultingDate: form.fechaConsulta
         ? new Date(form.fechaConsulta).toISOString()
         : null,
-      comment: (form.mensaje || "").toUpperCase(),
+      comment: (form.comentario || "").toUpperCase(),
       status: form.activo ? "ACTIVE" : "INACTIVO",
       appointmentAddress: {
         address: (form.direccion || "").toUpperCase(),
@@ -272,7 +204,6 @@ export default function PersonForm({ data }: Props) {
     );
   };
 
- 
   return (
     <ScaleIn>
      <div className=" my-auto">
@@ -359,57 +290,6 @@ export default function PersonForm({ data }: Props) {
             <div className="grid grid-cols-6 gap-4">
               <InputField label="Nombre" value={form.nombre} readOnly={!isEditing} onChange={(v) => handleChange("nombre", v)}  />
               <InputField label="Apellidos" value={form.apellidos} readOnly={!isEditing} onChange={(v) => handleChange("apellidos", v)} />
-              <InputField label="Apodo"  value={form.apodo} readOnly={!isEditing} onChange={(v) => handleChange("apodo", v)}  />
-              <InputField label="Cédula" value={form.cedula} readOnly={!isEditing} onChange={(v) => handleChange("cedula", v)}  />
-              <InputField label="Estado Civil" value={form.estadoCivil} readOnly={!isEditing} onChange={(v) => handleChange("estadoCivil", v)} />
-              <InputField label="Profesión" value={form.profesion} readOnly={!isEditing} onChange={(v) => handleChange("profesion", v)} />
-            </div>
-          </div>
-        )}
-
-        {/* Contactos */}
-        {activeTab === "contactos" && (
-          <div className="col-span-12 border rounded-lg p-6 bg-gray-50">
-            <h2 className="text-lg font-bold text-green-700 mb-4">
-              Información de Contacto
-            </h2>
-            <div className="grid grid-cols-6 gap-4">
-              <InputField label="Teléfono" value={form.telefono} readOnly={!isEditing} onChange={(v) => handleChange("telefono", v)} />
-              <InputField label="Celular" value={form.celular} readOnly={!isEditing} onChange={(v) => handleChange("celular", v)} />
-              <InputField label="Correo" type="email" value={form.email} readOnly={!isEditing} onChange={(v) => handleChange("email", v)} />
-              <InputField label="Dirección" value={form.direccion} readOnly={!isEditing} className="col-span-6" onChange={(v) => handleChange("direccion", v)} />
-            </div>
-          </div>
-        )}
-
-        {/* Doctor */}
-        {activeTab === "doctor" && (
-          <div className="col-span-12 border rounded-lg p-6 bg-gray-50">
-            <h2 className="text-lg font-bold text-green-700 mb-4">
-              Información del Doctor
-            </h2>
-            <div className="grid grid-cols-6 gap-4">
-              <InputField label="Nombre" value={form.doctorNombre} readOnly={!isEditing} onChange={(v) => handleChange("doctorNombre", v)} />
-              <InputField label="Apellidos" value={form.doctorApellidos} readOnly={!isEditing} onChange={(v) => handleChange("doctorApellidos", v)} />
-              <InputField label="Centro de Salud" value={form.doctorClinica} readOnly={!isEditing} onChange={(v) => handleChange("doctorClinica", v)} />
-              <InputField label="Ciudad" value={form.doctorCiudad} readOnly={!isEditing} onChange={(v) => handleChange("doctorCiudad", v)} />
-              <InputField label="Teléfono" value={form.doctorTelefono} readOnly={!isEditing} onChange={(v) => handleChange("doctorTelefono", v)} />
-              <InputField label="Correo" type="email" value={form.doctorEmail} readOnly={!isEditing} onChange={(v) => handleChange("doctorEmail", v)} />
-              <InputField label="Especialidad" value={form.especialidad} readOnly={!isEditing} onChange={(v) => handleChange("especialidad", v)} />
-            </div>
-          </div>
-        )}
-
-        {/* Mensaje */}
-        {activeTab === "mensaje" && (
-          <div className="col-span-12 border rounded-lg p-6 bg-gray-50">
-            <h2 className="text-lg font-bold text-green-700 mb-4">Mensaje</h2>
-            <div className="grid grid-cols-6 gap-4">
-              <InputField label="Nombre del paciente" value={form.nombre} readOnly={!isEditing} onChange={(v) => handleChange("nombre", v)} />
-              <InputField label="Apellido del paciente" value={form.apellidos} readOnly={!isEditing} onChange={(v) => handleChange("apellidos", v)} />
-              <InputField label="Nombre del Doctor" value={form.doctorNombre} readOnly={!isEditing} onChange={(v) => handleChange("doctorNombre", v)} />
-              <InputField label="Apellido del Doctor" value={form.doctorApellidos} readOnly={!isEditing} onChange={(v) => handleChange("doctorApellidos", v)} />
-              <TextAreaField label="Mensaje recibido" value={form.mensaje || ""} readOnly={!isEditing} className="col-span-12" onChange={(v) => handleChange("mensaje", v)} />
             </div>
           </div>
         )}
@@ -425,13 +305,43 @@ export default function PersonForm({ data }: Props) {
               <InputField label="Ciudad" type="text" value={form.ciudad} readOnly={!isEditing} className="col-span-3" onChange={(v) => handleChange("ciudad", v)} />
               <InputField label="Correo" type="email" value={form.email} readOnly={!isEditing} className="col-span-3" onChange={(v) => handleChange("email", v)}/>
               <InputField label="Teléfono" value={form.telefono} readOnly={!isEditing} className="col-span-2" onChange={(v) => handleChange("telefono", v)} />
-              <InputField label="Tipo de consulta" value={form.tipoConsulta} readOnly={!isEditing} className="col-span-3" onChange={(v) => handleChange("tipoConsulta", v)} />
+              {
+  !isEditing ? (
+    <InputField
+      label="Tipo de consulta"
+      value={form.tipoConsulta}
+      readOnly={true}
+      className="col-span-3"
+      onChange={(v) => handleChange("tipoConsulta", v)}
+    />
+  ) : (
+    <div className="col-span-3">
+      <label className="block text-xs font-bold text-green-700 mb-1">
+        Tipo de consulta
+      </label>
+      <select
+        className="w-full border border-green-600 rounded p-2 text-sm bg-white"
+        value={form.tipoConsulta}
+        onChange={(e) => handleChange("tipoConsulta", e.target.value)}
+      >
+        <option value="">Seleccione una opción</option>
+        <option value="COMPRA">Compra</option>
+        <option value="ALQUILER">Alquiler</option>
+        <option value="VENTA">Venta</option>
+        <option value="EVALUACION">Evaluación</option>
+        <option value="HIPOTECA">Hipoteca</option>
+        <option value="OTRO">Otro</option>
+      </select>
+    </div>
+  )
+}
+
               <InputField label="Fecha de la consulta" type="datetime-local" value={form.fechaConsulta
                 ? new Date(form.fechaConsulta).toISOString().slice(0, 16) : ""
               }
               readOnly={!isEditing} className="col-span-3" onChange={(v) => handleChange("fechaConsulta", v)} />
 
-              <TextAreaField label="Mensaje recibido" value={form.mensaje || ""} readOnly={!isEditing} className="col-span-12" onChange={(v) => handleChange("mensaje", v)}
+              <TextAreaField label="Mensaje recibido" value={form.comentario || ""} readOnly={!isEditing} className="col-span-12" onChange={(v) => handleChange("comentario", v)}
               />
             </div>
           </div>
@@ -482,6 +392,7 @@ export default function PersonForm({ data }: Props) {
               <div className={className}>
                 <label className="block text-xs font-bold text-green-600 mb-1">
                   {label}
+                  
                 </label>
                 <textarea
                   className={`w-full border border-green-600 rounded p-2 text-sm min-h-[100px] resize-none ${ readOnly ? "bg-gray-100" : "bg-white"
@@ -489,7 +400,7 @@ export default function PersonForm({ data }: Props) {
                   value={value || ""}
                   readOnly={readOnly}
                   onChange={(e) => onChange(e.target.value)}
-                />
+            >{value}</textarea>
               </div>
             );
           }

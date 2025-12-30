@@ -67,7 +67,8 @@ public class AppointmentDetailService {
             existing.setConsultingType(updatedDetail.getConsultingType().toUpperCase());
         }
         if (updatedDetail.getComment() != null) {
-            existing.setComment(updatedDetail.getComment().toUpperCase());
+            String comment = updatedDetail.getComment().trim();
+            existing.setComment(comment.isEmpty() ? null : comment.toUpperCase());
         }
         if (updatedDetail.getConsultingDate() != null) {
             existing.setConsultingDate(updatedDetail.getConsultingDate());

@@ -3,9 +3,9 @@
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import PersonForm from '@/components/persona';
- import ModalWrapper from '@/components/ModalWrapper';
+import ModalWrapper from '@/components/ModalWrapper';
 
-interface PersonData {
+export  interface PersonData {
   id?: number; 
   nombre?: string;
   apellidos?: string;
@@ -16,25 +16,10 @@ interface PersonData {
   email?: string;
   telefono?: string;
   tipoConsulta?: string;
-  direccion?: string 
-  fechaConsulta?: string
-
-  // doctor
-  doctorNombre?: string;
-  doctorApellidos?: string;
-  doctorClinica?: string;
-  doctorCiudad?: string;
-  doctorTelefono?: string;
-  doctorEmail?: string;
-  especialidad?: string;
-
-  // mensaje
-  mensaje?: string;
- activo?: boolean;
- 
-  // consulta
- 
-
+  direccion?: string;
+  fechaConsulta?: string;
+  comentario?: string;
+  activo?: boolean;
 }
 
 export default function PersonaDetalle() {
@@ -43,18 +28,19 @@ export default function PersonaDetalle() {
   const [data, setData] = useState<PersonData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
- const [isModalOpen, setIsModalOpen] = useState(true); // O controla cuándo abrir
+  const [isModalOpen, setIsModalOpen] = useState(true);
 
   useEffect(() => {
     async function fetchPerson() {
       try {
-        const res = await fetch('/api/appointmentdetail/all'); 
+        const res = await fetch('/api/appointmentdetail/all');
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
         const allPersons = await res.json();
 
-     const persona = allPersons.find((p: any) => p.appointmentDtlId === Number(id));
+        const persona = allPersons.find((p: any) => p.appointmentDtlId === Number(id));
+        console.log(persona)
 
-        if (persona) {
+        if (persona) {  console.log(persona);
           setData({
             id: Number(id),
             nombre: persona.firstName,
@@ -68,18 +54,9 @@ export default function PersonaDetalle() {
             tipoConsulta: persona.consultingType || '',
             fechaConsulta: persona.consultingDate || '',
             direccion: persona.appointmentAddress?.address || '',
-
-            doctorNombre: persona.userId?.fullName || '',
-            doctorApellidos: persona.userId?.lastName || '',
-            doctorClinica: persona.userId?.title || '',
-            doctorCiudad: persona.userId?.appointmentAddress?.city || '',
-            doctorTelefono: persona.userId?.phoneNumber || '',
-            doctorEmail: persona.userId?.email || '',
-            especialidad: persona.userId?.appointmentUserType?.name || '',
-
-            mensaje: persona.comment || '',
-             activo: persona.status === "ACTIVE",
-          });
+            comentario: persona.comment , 
+            activo: persona.status === "ACTIVE",
+          } as PersonData);
         } else {
           setData(null);
         }
@@ -91,20 +68,16 @@ export default function PersonaDetalle() {
       }
     }
 
-     fetchPerson();
+    fetchPerson();
   }, [id]);
-  console.log(data); 
+
   if (loading) return <div className="mt-20 p-4 text-center">Cargando...</div>;
   if (error) return <div className="mt-20 p-4 text-center text-red-500">{error}</div>;
   if (!data) return <div className="mt-20 p-4 text-center">No se encontró la persona</div>;
-  return (
-    
-    <div className="10 p-4"> 
-      <PersonForm data={data}
-       />
-    </div>
 
-    
+  return (
+    <ModalWrapper isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+      <PersonForm data={data} />
+    </ModalWrapper>
   );
-  
 }

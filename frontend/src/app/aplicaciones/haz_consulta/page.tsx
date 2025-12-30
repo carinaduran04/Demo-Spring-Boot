@@ -295,7 +295,6 @@ export default function ConsultaForm() {
           </div>
         </div>
       </ScaleIn>
-
       <ModalAlert isOpen={showModal} message={modalMessage} onOk={onOkAction} onCancel={onCancelAction} onClose={closeModal}/>
     </>
   );
