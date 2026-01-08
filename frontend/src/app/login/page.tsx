@@ -125,29 +125,41 @@ export default function Login() {
     <div className="relative bg-white flex flex-col items-center min-h-screen">
       <div className="w-full px-8 pt-2 relative">
         <div className="flex items-center">
+          {/* 1. Logo */}
           <Image src="/logo16.png" alt="Logo" width={140} height={80} />
 
-          <div className="flex-1 relative ml-4">
-            <h1 className="inline-flex text-[1.5rem] font-semibold text-green-700 group text-2xl relative z-10 bg-white pr-2">
-              <span>DRT</span>
-              <span className="overflow-hidden transition-all duration-500 group-hover:w-[3ch] w-0">
-                <span className="inline-block">ech</span>
-              </span>
-              <span>G</span>
-              <span className="overflow-hidden transition-all duration-500 group-hover:w-[4ch] w-0">
-                <span className="inline-block">roup</span>
-              </span>
-            </h1>
-            <p className="text-xs text-green-800 opacity-90">
-              Pembroke Pines Florida 33025
-            </p>
+          {/* Contenedor principal del encabezado */}
+          <div className="flex-1 ml-4">
+            
+      {/* 2. Fila Superior: Contiene Nombre, Texto Central y Fecha */}
+      <div className="flex justify-between items-end pb-1">
+        
+        {/* Izquierda: DRTechGroup */}
+        <div className="flex flex-col">
+          <h1 className="inline-flex text-[1.5rem] font-semibold text-green-700 group text-2xl relative z-10 bg-white">
+            <span>DRT</span>
+            <span className="overflow-hidden transition-all duration-500 group-hover:w-[3ch] w-0">
+              <span className="inline-block">ech</span>
+            </span>
+            <span>G</span>
+            <span className="overflow-hidden transition-all duration-500 group-hover:w-[4ch] w-0">
+              <span className="inline-block">roup</span>
+            </span>
+          </h1>
+          <p className="text-xs text-green-800  font-semibold opacity-90">
+            Pembroke Pines Florida 33025
+          </p>
+        </div>
 
-            <div className="relative">
-              <div className="absolute left-0 right-0 top-full mt-1 border-t-4 border-green-400"></div>
+        {/* CENTRO: Tu nuevo texto (donde estaba la línea roja) */}
+        <div className="text-green-700 font-bold text-lg mb-1 mr-50">
+          APLICACION DE CITAS
+        </div>
 
-              <div className="absolute -top-12 right-0 bg-green-450 text-green-800 text-xs font-semibold px-3 py-1 rounded-lg shadow-md flex flex-col gap-1">
-                <div className="flex items-center gap-1">
-                  <span className="font-bold">Fecha:</span>
+        {/* Derecha: Fecha y Hora */}
+        <div className="bg-green-450 text-green-800 text-xs font-semibold   px-3 py-1 rounded-lg shadow-sm border border-green-200 flex flex-col gap-1  mr-4">
+           <div className="flex items-center gap-1">
+               <span className="font-bold">Fecha:</span>
                   <span>
                     {new Date().toLocaleDateString("es-ES", {
                       day: "2-digit",
@@ -166,9 +178,13 @@ export default function Login() {
                       hour12: true,
                     })}
                   </span>
-                </div>
-              </div>
             </div>
+         </div>
+      </div>
+
+            {/* 3. La Línea Verde Horizontal */}
+            <div className="w-full border-t-4 border-green-400"></div>
+            
           </div>
         </div>
       </div>

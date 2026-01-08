@@ -17,9 +17,10 @@ export default function SolicitudPrestamo() {
       <section className="text-center p-4">
         <div>
            <h1 className="text-4xl md:text-5xl font-bold text-green-600 mb-4">
-          Bienvenido a DRTG CLOUD TECHNOLOGY
-        </h1>
-
+            Bienvenido a DRTG CLOUD TECHNOLOGY
+            <br />
+            APPLICATION APPOINTMENTS
+          </h1>
         </div>
  
             <div className="mb-5 flex justify-center">
