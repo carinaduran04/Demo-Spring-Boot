@@ -92,22 +92,22 @@ export default function Login() {
       // Guardar datos del usuario
      const originalUser = data.find(u => u.userId === validUser.id);
 
-if (typeof window !== "undefined") {
-  localStorage.setItem(
-    "user",
-    JSON.stringify({
-      id: validUser.id,
-      username: validUser.name,
-      userName: validUser.fullName || validUser.name,
-      fullName: validUser.fullName,
-      role: validUser.role,
-      address: originalUser?.address || null,
-      userTypeId: validUser.userTypeId,
-      active: validUser.active,
-    })
-  );
-  sessionStorage.setItem("session", "active");
-}
+    if (typeof window !== "undefined") {
+      localStorage.setItem(
+        "user",
+        JSON.stringify({
+          id: validUser.id,
+          username: validUser.name,
+          userName: validUser.fullName || validUser.name,
+          fullName: validUser.fullName,
+          role: validUser.role,
+          address: originalUser?.address || null,
+          userTypeId: validUser.userTypeId,
+          active: validUser.active,
+        })
+      );
+      sessionStorage.setItem("session", "active");
+    }
 
       // Redirigir según tipo de usuario
     if (validUser.role === "admin") {
@@ -175,7 +175,7 @@ if (typeof window !== "undefined") {
 
       <div className="bg-gray-200 shadow-md rounded-md w-[330px] max-h-[89vh] p-8 flex flex-col justify-between overflow-hidden">
         <div className="flex justify-center px-4">
-          <Image src="/logo15.png" alt="Logo" width={80} height={80} className="w-2/4" />
+          <Image src="/logo16.png" alt="Logo" width={80} height={80} className="w-2/4" />
         </div>
 
         <div className="flex mb-4 mt-2">
